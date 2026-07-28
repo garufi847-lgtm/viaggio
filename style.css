@@ -160,6 +160,7 @@ main{position:relative; z-index:1; padding:20px; display:flex; flex-direction:co
 .dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
 .dot-treno{background:var(--teal);}
 .dot-bus{background:var(--amber);}
+.dot-metro{background:#c084fc;}
 .dot-piedi{background:var(--text-dim);}
 
 .leg-route{display:flex; flex-direction:column; gap:2px;}
@@ -220,6 +221,45 @@ main{position:relative; z-index:1; padding:20px; display:flex; flex-direction:co
 }
 .notes-card h2{margin:0 0 8px; font-family:var(--display); font-size:.95rem; letter-spacing:.02em;}
 .notes-card p{margin:0; font-size:.85rem; line-height:1.5; color:var(--text-dim);}
+
+.live-card{border-color:var(--teal-dim); display:flex; flex-direction:column; gap:12px;}
+.live-card p{margin:0;}
+.live-card code{background:var(--board-inset); padding:1px 5px; border-radius:4px; font-family:var(--mono); font-size:.8em;}
+
+.field.full{width:100%;}
+.field.full input[type="text"], .field.full input[type="url"], .field.full input[type="password"]{
+  background:var(--board-inset);
+  border:1px solid var(--line);
+  color:var(--text);
+  font-family:var(--body);
+  font-size:.85rem;
+  padding:10px 12px;
+  border-radius:10px;
+}
+.field input[type="time"]{
+  background:var(--board);
+  border:1px solid var(--line);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:.9rem;
+  padding:10px 12px;
+  border-radius:10px;
+  color-scheme:dark;
+}
+
+.live-fields{display:flex; flex-direction:column; gap:10px;}
+
+.btn-solid{width:auto; align-self:flex-start;}
+.btn-live{background:var(--teal); border-color:var(--teal); color:#08201d;}
+
+.api-details{border:1px solid var(--line); border-radius:10px; padding:10px 12px;}
+.api-details summary{cursor:pointer; font-size:.8rem; color:var(--text-dim); font-weight:600;}
+.api-details .sheet-sub{margin:10px 0;}
+
+.live-status{margin:0; font-size:.8rem; min-height:1.2em;}
+.live-status.is-error{color:var(--warn);}
+.live-status.is-ok{color:var(--teal);}
+.live-status.is-loading{color:var(--amber);}
 
 .legend{display:flex; gap:18px; flex-wrap:wrap; padding:0 4px;}
 .legend-item{display:flex; align-items:center; gap:7px; font-size:.78rem; color:var(--text-dim);}
