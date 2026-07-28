@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Monterotondo → Talamone</title>
+<meta name="theme-color" content="#12141a">
+<meta name="description" content="Tabellone del viaggio: mezzi, orari e binari da Monterotondo Stazione a via Giuseppe Garibaldi 5, Talamone">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.svg">
+<link rel="apple-touch-icon" href="icons/icon-192.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="platform-glow" aria-hidden="true"></div>
+
+<header class="app-header">
+  <div class="route-title">
+    <span class="stop">MONTEROTONDO</span>
+    <svg class="route-arrow" viewBox="0 0 40 16" aria-hidden="true"><path d="M0 8 H34 M26 1 L34 8 L26 15" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+    <span class="stop">TALAMONE</span>
+  </div>
+  <p class="route-sub">Stazione FS → via Giuseppe Garibaldi, 5 · Fonteblanda, Orbetello (GR)</p>
+
+  <div class="controls">
+    <label class="field">
+      <span>Data del viaggio</span>
+      <input type="date" id="trip-date">
+    </label>
+
+    <div class="field toggle-field">
+      <span>Il regionale ferma a Talamone?</span>
+      <div class="toggle" id="stop-toggle" role="radiogroup" aria-label="Il treno ferma direttamente alla stazione di Talamone">
+        <button type="button" class="toggle-opt is-active" data-val="diretto" role="radio" aria-checked="true">Sì, diretto</button>
+        <button type="button" class="toggle-opt" data-val="cambio" role="radio" aria-checked="false">No, cambio</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="board" aria-label="Tabellone di viaggio">
+    <div class="board-head" role="row">
+      <span role="columnheader">Mezzo</span>
+      <span role="columnheader">Tratta</span>
+      <span role="columnheader">Partenza</span>
+      <span role="columnheader">Bin. P.</span>
+      <span role="columnheader">Arrivo</span>
+      <span role="columnheader">Bin. A.</span>
+    </div>
+    <div id="board-body"></div>
+  </section>
+
+  <section class="notes-card">
+    <h2>Come funziona questo tabellone</h2>
+    <p>I binari reali vengono assegnati da RFI/Trenitalia solo poche ore prima — e non esiste un dato pubblico affidabile con largo anticipo. Questa app ti dà la sequenza corretta di mezzi e i link diretti per controllare orari live; quando li scopri (a casa o in stazione) segnali qui il binario: resta salvato sul telefono per tutto il viaggio.</p>
+  </section>
+
+  <section class="legend">
+    <div class="legend-item"><span class="dot dot-treno"></span> Treno</div>
+    <div class="legend-item"><span class="dot dot-bus"></span> Autobus</div>
+    <div class="legend-item"><span class="dot dot-piedi"></span> A piedi</div>
+  </section>
+</main>
+
+<footer class="app-footer">
+  <button id="reset-btn" type="button">Azzera binari salvati</button>
+  <span id="install-hint" class="install-hint" hidden>Aggiungi alla schermata Home per usarla offline in stazione →</span>
+</footer>
+
+<div id="flap-editor" class="sheet" hidden>
+  <div class="sheet-inner">
+    <h3 id="flap-editor-title">Binario</h3>
+    <p class="sheet-sub">Inserisci il binario appena lo vedi sul tabellone della stazione.</p>
+    <input id="flap-editor-input" type="text" inputmode="text" maxlength="4" placeholder="es. 4">
+    <div class="sheet-actions">
+      <button id="flap-editor-cancel" type="button" class="btn-ghost">Annulla</button>
+      <button id="flap-editor-save" type="button" class="btn-solid">Salva</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
