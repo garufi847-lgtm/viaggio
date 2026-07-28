@@ -247,8 +247,10 @@ main{position:relative; z-index:1; padding:20px; display:flex; flex-direction:co
 .sheet{
   position:fixed; inset:0; z-index:10;
   background:rgba(0,0,0,.55);
-  display:flex; align-items:flex-end; justify-content:center;
+  align-items:flex-end; justify-content:center;
 }
+.sheet[hidden]{display:none;}
+.sheet:not([hidden]){display:flex;}
 .sheet-inner{
   width:100%; max-width:420px;
   background:var(--board);
