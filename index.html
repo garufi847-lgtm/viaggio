@@ -64,9 +64,8 @@
 
 <main>
   <section class="notes-card live-card">
-    <h2>Orari e binari live dei treni</h2>
-    <p>Per i treni, il tasto "Aggiorna orario" su ogni tratta interroga <strong>ViaggiaTreno</strong>, il sistema pubblico di Trenitalia — gratuito, senza chiave, con il binario reale confermato poco prima dell'arrivo del treno. Passa attraverso un proxy CORS pubblico gratuito (necessario perché ViaggiaTreno non è pensato per essere chiamato da altri siti): può essere lento o non rispondere, in quel caso ti segnalo di controllare a mano.</p>
-    <p>Bus e metro non hanno una fonte live gratuita equivalente: per quelle tratte trovi un link diretto a Google Maps per il controllo manuale.</p>
+    <h2>Come funziona questo tabellone</h2>
+    <p>I binari reali vengono assegnati da RFI/Trenitalia solo poche ore prima — e non esiste un dato pubblico affidabile con largo anticipo. Ogni tratta ha un link diretto a Google Maps per controllare orari aggiornati; quando scopri il binario (a casa o in stazione) segnalo qui: resta salvato sul telefono per tutto il viaggio.</p>
   </section>
 
   <section class="board" aria-label="Tabellone di viaggio">
@@ -81,11 +80,6 @@
     <div id="board-body"></div>
   </section>
 
-  <section class="notes-card">
-    <h2>Come funziona questo tabellone</h2>
-    <p>I binari reali vengono assegnati da RFI/Trenitalia solo poche ore prima — e non esiste un dato pubblico affidabile con largo anticipo. Questa app ti dà la sequenza corretta di mezzi e i link diretti per controllare orari live; quando li scopri (a casa o in stazione) segnali qui il binario: resta salvato sul telefono per tutto il viaggio.</p>
-  </section>
-
   <section class="legend">
     <div class="legend-item"><span class="dot dot-treno"></span> Treno</div>
     <div class="legend-item"><span class="dot dot-metro"></span> Metro</div>
@@ -96,7 +90,7 @@
 
 <footer class="app-footer">
   <button id="reset-btn" type="button">Azzera binari salvati</button>
-  <span class="build-tag">build 10</span>
+  <span class="build-tag">build 11</span>
   <span id="install-hint" class="install-hint" hidden>Aggiungi alla schermata Home per usarla offline in stazione →</span>
 </footer>
 

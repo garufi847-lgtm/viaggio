@@ -397,16 +397,10 @@
 
       const routeCell = document.createElement('div');
       routeCell.className = 'leg-route';
-      const isTrain = leg.mode === 'treno';
       routeCell.innerHTML = `
         <span class="leg-line">${leg.line}</span>
         <span class="leg-from-to">${leg.from}${leg.to ? ' → ' + leg.to : ''}</span>
         ${leg.note ? `<span class="leg-note">${leg.note}</span>` : ''}
-        ${isTrain ? `
-          <div class="leg-refresh-row">
-            <button type="button" class="leg-refresh" data-leg-id="${leg.id}">Aggiorna orario ↻</button>
-            <span class="leg-refresh-msg"></span>
-          </div>` : ''}
         ${leg.live ? `<a class="leg-gmaps" href="${leg.live}" target="_blank" rel="noopener">Apri su Google Maps ↗</a>` : ''}
       `;
       row.appendChild(routeCell);
@@ -414,52 +408,9 @@
       row.appendChild(buildCellGroup(leg));
 
       boardBody.appendChild(row);
-
-      if (isTrain) {
-        const btn = routeCell.querySelector('.leg-refresh');
-        const msgEl = routeCell.querySelector('.leg-refresh-msg');
-        btn.addEventListener('click', () => refreshTrainLeg(leg, btn, msgEl));
-      }
     });
 
     updateInstallHint();
-  }
-
-  function refreshTrainLeg(leg, btn, msgEl) {
-    const originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Aggiorno…';
-    msgEl.textContent = '';
-    msgEl.className = 'leg-refresh-msg';
-
-    vtRefreshTrainLeg(leg)
-      .then(({ approx }) => {
-        const depEl = document.getElementById(`time-${leg.id}-dep`);
-        const arrEl = document.getElementById(`time-${leg.id}-arr`);
-        if (depEl) depEl.textContent = leg.depTime || '—';
-        if (arrEl) arrEl.textContent = leg.arrTime || '—';
-
-        const depFlap = document.querySelector(`[data-flap="${leg.id}-dep"]`);
-        const arrFlap = document.querySelector(`[data-flap="${leg.id}-arr"]`);
-        const depVal = getPlatform(leg.id, 'dep');
-        const arrVal = getPlatform(leg.id, 'arr');
-        if (depFlap) { depFlap.textContent = depVal || '?'; depFlap.className = 'flap flap-flip ' + (depVal ? 'is-set' : 'is-empty'); }
-        if (arrFlap) { arrFlap.textContent = arrVal || '?'; arrFlap.className = 'flap flap-flip ' + (arrVal ? 'is-set' : 'is-empty'); }
-
-        msgEl.textContent = (leg.trainLabel ? leg.trainLabel + ' — ' : '') + (approx ? 'corrispondenza approssimativa, verifica.' : 'aggiornato ora.');
-        msgEl.className = 'leg-refresh-msg ' + (approx ? 'is-warn' : 'is-ok');
-      })
-      .catch((err) => {
-        const isNetErr = err instanceof TypeError;
-        msgEl.textContent = isNetErr
-          ? 'Anche il proxy CORS non risponde al momento. Riprova tra poco o controlla su viaggiatreno.it.'
-          : (err.message || 'Errore nell\'aggiornamento.');
-        msgEl.className = 'leg-refresh-msg is-error';
-      })
-      .finally(() => {
-        btn.disabled = false;
-        btn.textContent = originalText;
-      });
   }
 
   function buildCellGroup(leg) {
