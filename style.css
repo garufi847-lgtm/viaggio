@@ -167,15 +167,23 @@ main{position:relative; z-index:1; padding:20px; display:flex; flex-direction:co
 .leg-line{font-size:.72rem; color:var(--amber); text-transform:uppercase; letter-spacing:.06em; font-weight:700;}
 .leg-from-to{font-size:.92rem; font-weight:600;}
 .leg-note{font-size:.76rem; color:var(--text-dim); margin-top:2px;}
-.leg-live{
-  align-self:flex-start;
+.leg-refresh-row{display:flex; align-items:center; gap:8px; margin-top:4px; flex-wrap:wrap;}
+.leg-refresh{
+  font-family:var(--body);
   font-size:.72rem;
+  font-weight:600;
   color:var(--teal);
-  text-decoration:none;
-  border-bottom:1px dashed var(--teal-dim);
-  margin-top:2px;
+  background:transparent;
+  border:1px solid var(--teal-dim);
+  border-radius:16px;
+  padding:5px 12px;
+  cursor:pointer;
 }
-.leg-live:hover{color:var(--amber); border-color:var(--amber-dim);}
+.leg-refresh:hover{background:rgba(63,184,175,.12);}
+.leg-refresh:disabled{opacity:.6; cursor:default;}
+.leg-refresh-msg{font-size:.7rem; color:var(--text-dim);}
+.leg-refresh-msg.is-ok{color:var(--teal);}
+.leg-refresh-msg.is-error{color:var(--warn);}
 
 .leg-cell-group{display:flex; gap:10px;}
 @media (min-width:680px){.leg-cell-group{display:contents;}}
@@ -247,19 +255,17 @@ main{position:relative; z-index:1; padding:20px; display:flex; flex-direction:co
   color-scheme:dark;
 }
 
-.live-fields{display:flex; flex-direction:column; gap:10px;}
+.leg-gmaps{
+  align-self:flex-start;
+  font-size:.72rem;
+  color:var(--teal);
+  text-decoration:none;
+  border-bottom:1px dashed var(--teal-dim);
+  margin-top:4px;
+}
+.leg-gmaps:hover{color:var(--amber); border-color:var(--amber-dim);}
 
-.btn-solid{width:auto; align-self:flex-start;}
-.btn-live{background:var(--teal); border-color:var(--teal); color:#08201d;}
-
-.api-details{border:1px solid var(--line); border-radius:10px; padding:10px 12px;}
-.api-details summary{cursor:pointer; font-size:.8rem; color:var(--text-dim); font-weight:600;}
-.api-details .sheet-sub{margin:10px 0;}
-
-.live-status{margin:0; font-size:.8rem; min-height:1.2em;}
-.live-status.is-error{color:var(--warn);}
-.live-status.is-ok{color:var(--teal);}
-.live-status.is-loading{color:var(--amber);}
+.leg-refresh-msg.is-warn{color:var(--amber);}
 
 .legend{display:flex; gap:18px; flex-wrap:wrap; padding:0 4px;}
 .legend-item{display:flex; align-items:center; gap:7px; font-size:.78rem; color:var(--text-dim);}

@@ -64,37 +64,9 @@
 
 <main>
   <section class="notes-card live-card">
-    <h2>Importa orari live da Google Maps</h2>
-    <p>Apri il tuo link una volta nel browser, copia l'URL completo dalla barra degli indirizzi (non lo short link <code>maps.app.goo.gl</code>, quello non è leggibile da qui) e incollalo sotto.</p>
-
-    <label class="field full">
-      <span>Link Google Maps (esteso)</span>
-      <input type="url" id="maps-link" placeholder="https://www.google.com/maps/dir/...">
-    </label>
-    <button type="button" id="import-link-btn" class="btn-solid">Importa dal link</button>
-
-    <details class="api-details">
-      <summary>Chiave API Google Maps (per gli orari reali dei singoli mezzi)</summary>
-      <p class="sheet-sub">Il link da solo mi dà partenza, arrivo e ora desiderata. Per calcolare quali treni/bus prendere e i loro orari reali serve una chiamata live a Google — inserisci qui la tua chiave API (resta salvata solo su questo dispositivo).</p>
-      <label class="field full">
-        <span>API key</span>
-        <input type="password" id="api-key" placeholder="AIzaSy...">
-      </label>
-    </details>
-
-    <div class="live-fields">
-      <label class="field full">
-        <span>Partenza</span>
-        <input type="text" id="origin-input" value="Monterotondo, Stazione FS">
-      </label>
-      <label class="field full">
-        <span>Destinazione</span>
-        <input type="text" id="destination-input" value="Via Giuseppe Garibaldi, 5, Talamone, Fonteblanda GR">
-      </label>
-    </div>
-
-    <button type="button" id="live-update-btn" class="btn-solid btn-live">Calcola tragitto e orari live</button>
-    <p id="live-status" class="live-status" role="status"></p>
+    <h2>Orari e binari live dei treni</h2>
+    <p>Per i treni, il tasto "Aggiorna orario" su ogni tratta interroga <strong>ViaggiaTreno</strong>, il sistema pubblico di Trenitalia — gratuito, senza chiave, e con il binario reale confermato poco prima dell'arrivo del treno. È un servizio non ufficiale/non documentato: può essere lento o non rispondere, in quel caso ti segnalo di controllare a mano.</p>
+    <p>Bus e metro non hanno una fonte live gratuita equivalente: per quelle tratte trovi un link diretto a Google Maps per il controllo manuale.</p>
   </section>
 
   <section class="board" aria-label="Tabellone di viaggio">

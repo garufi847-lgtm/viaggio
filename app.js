@@ -2,7 +2,8 @@
   'use strict';
 
   const STORAGE_KEY = 'talamone-trip-v1';
-  const API_KEY_STORAGE = 'talamone-gmaps-key';
+  const VT_CACHE_KEY = 'talamone-vt-station-cache';
+  const VT_BASE = 'https://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/';
 
   const boardBody = document.getElementById('board-body');
   const dateInput = document.getElementById('trip-date');
@@ -19,85 +20,127 @@
   const stopTo = document.getElementById('stop-to');
   const routeSub = document.getElementById('route-sub');
 
-  const START_POINTS = {
-    io: { label: 'Monterotondo, Stazione FS', title: 'MONTEROTONDO', sub: 'Stazione FS' },
-    papa: { label: 'Flaminio, Roma', title: 'FLAMINIO (con papà)', sub: 'Flaminio' }
-  };
-  const ANDATA_DEST = 'Via Giuseppe Garibaldi, 5, Talamone, Fonteblanda GR';
-  let direction = 'andata';
-  let profile = 'io';
-
-  const mapsLinkInput = document.getElementById('maps-link');
-  const importLinkBtn = document.getElementById('import-link-btn');
-  const apiKeyInput = document.getElementById('api-key');
-  const originInput = document.getElementById('origin-input');
-  const destinationInput = document.getElementById('destination-input');
-  const liveUpdateBtn = document.getElementById('live-update-btn');
-  const liveStatus = document.getElementById('live-status');
-
   const sheet = document.getElementById('flap-editor');
   const sheetTitle = document.getElementById('flap-editor-title');
   const sheetInput = document.getElementById('flap-editor-input');
   const sheetCancel = document.getElementById('flap-editor-cancel');
   const sheetSave = document.getElementById('flap-editor-save');
 
+  const START_POINTS = {
+    io: { label: 'Monterotondo, Stazione FS', title: 'MONTEROTONDO', sub: 'Stazione FS' },
+    papa: { label: 'Flaminio, Roma', title: 'FLAMINIO (con papà)', sub: 'Flaminio' }
+  };
+  let direction = 'andata';
+  let profile = 'io';
+  let currentLegs = [];
+
   const gmaps = (from, to) =>
     `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(from)}&destination=${encodeURIComponent(to)}&travelmode=transit`;
 
-  let currentLegs = [];
-  let liveActive = false;
-
-  // ================= Import dal link Google Maps =================
-  function parseMapsLink(raw) {
-    const url = raw.trim();
-    if (!url) return { error: 'Incolla prima un link.' };
-    if (/maps\.app\.goo\.gl/i.test(url)) {
-      return { error: 'Questo è uno short link: aprilo nel browser, poi copia l\'URL completo dalla barra degli indirizzi e incollalo qui.' };
-    }
-
-    const dirMatch = url.match(/\/dir\/([^/]+)\/([^/]+)/);
-    let origin = null, destination = null;
-    if (dirMatch) {
-      origin = cleanPlaceText(dirMatch[1]);
-      destination = cleanPlaceText(dirMatch[2]);
-    }
-
-    let departure = null;
-    const timeMatch = url.match(/!8j(\d{9,11})/);
-    if (timeMatch) {
-      departure = new Date(parseInt(timeMatch[1], 10) * 1000);
-    }
-
-    if (!origin && !destination && !departure) {
-      return { error: 'Non riesco a leggere partenza/arrivo/orario da questo link. Puoi comunque compilare i campi a mano qui sotto.' };
-    }
-    return { origin, destination, departure };
+  // ================= ViaggiaTreno (gratis, senza chiave, solo treni) =================
+  function vtLoadCache() {
+    try { return JSON.parse(localStorage.getItem(VT_CACHE_KEY)) || {}; }
+    catch { return {}; }
+  }
+  function vtSaveCache(cache) {
+    localStorage.setItem(VT_CACHE_KEY, JSON.stringify(cache));
   }
 
-  function cleanPlaceText(segment) {
+  async function vtResolveStationId(name) {
+    const cache = vtLoadCache();
+    const key = name.trim().toUpperCase();
+    if (cache[key]) return cache[key];
+
+    const query = name.split(',')[0].split('(')[0].trim(); // "Roma Termini" da "Roma Termini, ..."
+    const res = await fetch(VT_BASE + 'autocompletaStazione/' + encodeURIComponent(query));
+    if (!res.ok) throw new Error('ViaggiaTreno non raggiungibile (stazione "' + query + '").');
+    const text = await res.text();
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) throw new Error('Nessuna stazione trovata per "' + query + '".');
+
+    // preferisci la corrispondenza più vicina al nome cercato
+    const upperQuery = query.toUpperCase();
+    let best = lines[0];
+    let bestScore = -1;
+    lines.forEach(line => {
+      const [stationName] = line.split('|');
+      let score = 0;
+      if (stationName === upperQuery) score = 100;
+      else if (stationName.startsWith(upperQuery)) score = 50;
+      else if (stationName.includes(upperQuery)) score = 10;
+      if (score > bestScore) { bestScore = score; best = line; }
+    });
+
+    const id = best.split('|')[1];
+    if (!id) throw new Error('Formato di risposta inatteso per "' + query + '".');
+    cache[key] = id.trim();
+    vtSaveCache(cache);
+    return cache[key];
+  }
+
+  async function vtFetchJSON(path) {
+    const res = await fetch(VT_BASE + path);
+    if (!res.ok) throw new Error('ViaggiaTreno ha risposto con errore (' + res.status + ').');
+    return res.json();
+  }
+
+  function vtDestinationKeywords(toText) {
+    // estrae parole chiave "forti" dal nome destinazione per il match sui treni
+    return toText
+      .replace(/\(.*?\)/g, '')
+      .split(/[\s,/]+/)
+      .map(w => w.trim().toUpperCase())
+      .filter(w => w.length > 3 && !['STAZIONE', 'ROMA', 'PORTO'].includes(w));
+  }
+
+  async function vtRefreshTrainLeg(leg) {
+    const originId = await vtResolveStationId(leg.from);
+    const date = dateInput.value;
+    const time = timeInput.value || '08:00';
+    const when = date ? new Date(`${date}T${time}:00`) : new Date();
+
+    const departures = await vtFetchJSON('partenze/' + originId + '/' + encodeURIComponent(when.toString()));
+    if (!Array.isArray(departures) || !departures.length) {
+      throw new Error('Nessun treno in partenza trovato da questa stazione in quella fascia oraria.');
+    }
+
+    const keywords = vtDestinationKeywords(leg.to);
+    const scored = departures.map(t => {
+      const dest = (t.destinazione || '').toUpperCase();
+      const matches = keywords.filter(k => dest.includes(k)).length;
+      return { t, matches };
+    }).sort((a, b) => b.matches - a.matches);
+
+    const chosen = (scored[0] && scored[0].matches > 0) ? scored[0].t : departures[0];
+    const approx = !(scored[0] && scored[0].matches > 0);
+
+    const ritardo = typeof chosen.ritardo === 'number' ? chosen.ritardo : 0;
+    const depTimeBase = chosen.compOrarioPartenza || '';
+    leg.depTime = depTimeBase + (ritardo > 0 ? ` (+${ritardo}′)` : ritardo < 0 ? ` (${ritardo}′)` : '');
+    const binarioPart = chosen.binarioEffettivoPartenzaDescrizione || chosen.binarioProgrammatoPartenzaDescrizione;
+    if (binarioPart) setPlatform(leg.id, 'dep', String(binarioPart));
+
+    leg.trainLabel = (chosen.compNumeroTreno || '').trim();
+    leg.approxMatch = approx;
+
+    // prova a recuperare orario/binario di arrivo dalla stazione di destinazione
     try {
-      let text = decodeURIComponent(segment.replace(/\+/g, ' '));
-      text = text.replace(/\s*#\s*[0-9a-f]{4,}\s*$/i, ''); // rimuove eventuali id interni tipo "# f13938"
-      return text.trim();
+      const destId = await vtResolveStationId(leg.to);
+      const arrivals = await vtFetchJSON('arrivi/' + destId + '/' + encodeURIComponent(when.toString()));
+      const match = Array.isArray(arrivals)
+        ? arrivals.find(a => a.numeroTreno === chosen.numeroTreno)
+        : null;
+      if (match) {
+        leg.arrTime = match.compOrarioArrivo || '';
+        const binarioArr = match.binarioEffettivoArrivoDescrizione || match.binarioProgrammatoArrivoDescrizione;
+        if (binarioArr) setPlatform(leg.id, 'arr', String(binarioArr));
+      }
     } catch {
-      return segment;
+      // arrivo non recuperabile: lasciamo solo la partenza, nessun errore bloccante
     }
-  }
 
-  importLinkBtn.addEventListener('click', () => {
-    const result = parseMapsLink(mapsLinkInput.value);
-    if (result.error) {
-      setLiveStatus(result.error, 'error');
-      return;
-    }
-    if (result.origin) originInput.value = result.origin;
-    if (result.destination) destinationInput.value = result.destination;
-    if (result.departure) {
-      dateInput.value = result.departure.toISOString().slice(0, 10);
-      timeInput.value = result.departure.toTimeString().slice(0, 5);
-    }
-    setLiveStatus('Importato dal link. Ora premi "Calcola tragitto e orari live" per gli orari reali.', 'ok');
-  });
+    return { approx };
+  }
 
   // ================= Direzione (andata/ritorno) e profilo (io / con papà) =================
   function updateHeaderForDirection() {
@@ -113,11 +156,6 @@
     }
   }
 
-  function setStartPointField(value) {
-    if (direction === 'andata') originInput.value = value;
-    else destinationInput.value = value;
-  }
-
   profileOpts.forEach(opt => {
     opt.addEventListener('click', () => {
       if (opt.dataset.val === profile) return;
@@ -125,11 +163,7 @@
       opt.classList.add('is-active');
       opt.setAttribute('aria-checked', 'true');
       profile = opt.dataset.val;
-
-      setStartPointField(START_POINTS[profile].label);
       updateHeaderForDirection();
-      liveActive = false;
-      setLiveStatus('', null);
       render();
     });
   });
@@ -141,155 +175,12 @@
       opt.classList.add('is-active');
       opt.setAttribute('aria-checked', 'true');
       direction = opt.dataset.val;
-
-      // scambia partenza/destinazione se sono ancora quelle di default o quelle appena scambiate
-      const o = originInput.value;
-      originInput.value = destinationInput.value;
-      destinationInput.value = o;
-
       updateHeaderForDirection();
-      liveActive = false;
-      setLiveStatus('', null);
       render();
     });
   });
 
-  // ================= Chiave API salvata =================
-  apiKeyInput.value = localStorage.getItem(API_KEY_STORAGE) || '';
-  apiKeyInput.addEventListener('change', () => {
-    localStorage.setItem(API_KEY_STORAGE, apiKeyInput.value.trim());
-  });
-
-  // ================= Google Maps Directions live =================
-  function loadMapsScript(key) {
-    return new Promise((resolve, reject) => {
-      if (window.google && window.google.maps && window.google.maps.DirectionsService) {
-        resolve();
-        return;
-      }
-      const existing = document.getElementById('gmaps-script');
-      if (existing) existing.remove();
-      const script = document.createElement('script');
-      script.id = 'gmaps-script';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}`;
-      script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Impossibile caricare Google Maps: controlla la chiave API e la connessione.'));
-      document.head.appendChild(script);
-    });
-  }
-
-  function fetchLiveRoute({ origin, destination, departureTime, apiKey }) {
-    return loadMapsScript(apiKey).then(() => new Promise((resolve, reject) => {
-      const service = new google.maps.DirectionsService();
-      service.route({
-        origin,
-        destination,
-        travelMode: google.maps.TravelMode.TRANSIT,
-        transitOptions: { departureTime }
-      }, (result, status) => {
-        if (status === 'OK' && result.routes && result.routes[0]) {
-          resolve(result.routes[0]);
-        } else {
-          reject(new Error('Google Maps non ha trovato un percorso in transito (' + status + ').'));
-        }
-      });
-    }));
-  }
-
-  function stripHtml(html) {
-    const div = document.createElement('div');
-    div.innerHTML = html || '';
-    return div.textContent.trim();
-  }
-
-  function stepsToLegs(steps) {
-    return steps.map((step, i) => {
-      if (step.travel_mode === 'WALKING') {
-        return {
-          id: 'live-' + i,
-          mode: 'piedi',
-          line: 'A piedi',
-          from: stripHtml(step.instructions) || 'Tratto a piedi',
-          to: '',
-          note: step.distance ? step.distance.text + (step.duration ? ' · ' + step.duration.text : '') : '',
-          depTime: '', arrTime: '',
-          noPlatform: true, live: null
-        };
-      }
-      const td = step.transit;
-      if (!td) {
-        return {
-          id: 'live-' + i, mode: 'piedi', line: 'Spostamento', from: stripHtml(step.instructions) || '', to: '',
-          note: '', depTime: '', arrTime: '', noPlatform: true, live: null
-        };
-      }
-      const vehicleType = (td.line.vehicle && td.line.vehicle.type) || '';
-      const isTrain = /RAIL|TRAIN/i.test(vehicleType);
-      const isMetro = /SUBWAY|METRO/i.test(vehicleType);
-      return {
-        id: 'live-' + i,
-        mode: isTrain ? 'treno' : (isMetro ? 'metro' : 'bus'),
-        line: (td.line.short_name || td.line.name || (isTrain ? 'Treno' : (isMetro ? 'Metro' : 'Autobus'))),
-        from: td.departure_stop.name,
-        to: td.arrival_stop.name,
-        note: td.headsign ? ('Direzione ' + td.headsign) : '',
-        depTime: td.departure_time ? td.departure_time.text : '',
-        arrTime: td.arrival_time ? td.arrival_time.text : '',
-        live: gmaps(td.departure_stop.name, td.arrival_stop.name)
-      };
-    });
-  }
-
-  function setLiveStatus(msg, kind) {
-    liveStatus.textContent = msg;
-    liveStatus.className = 'live-status' + (kind ? ' is-' + kind : '');
-  }
-
-  liveUpdateBtn.addEventListener('click', () => {
-    const apiKey = apiKeyInput.value.trim();
-    const origin = originInput.value.trim();
-    const destination = destinationInput.value.trim();
-    const date = dateInput.value;
-    const time = timeInput.value || '08:00';
-
-    if (!apiKey) {
-      setLiveStatus('Senza chiave API mostro solo il tragitto generico (modalità manuale qui sotto). Inserisci una chiave per orari e linee reali.', 'error');
-      liveActive = false;
-      render();
-      return;
-    }
-    if (!origin || !destination) {
-      setLiveStatus('Servono partenza e destinazione.', 'error');
-      return;
-    }
-
-    localStorage.setItem(API_KEY_STORAGE, apiKey);
-    setLiveStatus('Sto calcolando il tragitto…', 'loading');
-    liveUpdateBtn.disabled = true;
-
-    const departureTime = date ? new Date(`${date}T${time}:00`) : new Date();
-
-    fetchLiveRoute({ origin, destination, departureTime, apiKey })
-      .then((route) => {
-        const leg = route.legs && route.legs[0];
-        if (!leg) throw new Error('Risposta senza tratte.');
-        currentLegs = stepsToLegs(leg.steps);
-        liveActive = true;
-        setLiveStatus('Tragitto aggiornato: ' + currentLegs.length + ' tappe trovate.', 'ok');
-        renderBoard(currentLegs);
-      })
-      .catch((err) => {
-        setLiveStatus(err.message || 'Errore nel calcolo del tragitto.', 'error');
-        liveActive = false;
-        render();
-      })
-      .finally(() => {
-        liveUpdateBtn.disabled = false;
-      });
-  });
-
-  // ================= Itinerario manuale (fallback senza API) =================
+  // ================= Itinerario =================
   function buildLegsAndata(mode, profile) {
     const legs = profile === 'papa' ? [
       {
@@ -431,7 +322,8 @@
     return legs;
   }
 
-  function buildLegsManual(mode) {
+  function buildLegs() {
+    const mode = toggle.querySelector('.is-active').dataset.val;
     return direction === 'ritorno' ? buildLegsRitorno(mode, profile) : buildLegsAndata(mode, profile);
   }
 
@@ -447,12 +339,9 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
   }
   function tripKey() {
-    if (liveActive) {
-      return `live__${direction}__${profile}__${dateInput.value}__${timeInput.value}__${originInput.value}__${destinationInput.value}`;
-    }
     const date = dateInput.value || 'senza-data';
     const mode = toggle.querySelector('.is-active').dataset.val;
-    return `manual__${direction}__${profile}__${date}__${mode}`;
+    return `${direction}__${profile}__${date}__${mode}`;
   }
   function getPlatform(legId, which) {
     const store = loadStore();
@@ -469,9 +358,7 @@
 
   // ================= Render =================
   function render() {
-    if (liveActive) return;
-    const mode = toggle.querySelector('.is-active').dataset.val;
-    currentLegs = buildLegsManual(mode);
+    currentLegs = buildLegs();
     renderBoard(currentLegs);
   }
 
@@ -490,38 +377,86 @@
 
       const routeCell = document.createElement('div');
       routeCell.className = 'leg-route';
+      const isTrain = leg.mode === 'treno';
       routeCell.innerHTML = `
         <span class="leg-line">${leg.line}</span>
         <span class="leg-from-to">${leg.from}${leg.to ? ' → ' + leg.to : ''}</span>
         ${leg.note ? `<span class="leg-note">${leg.note}</span>` : ''}
-        ${leg.live ? `<a class="leg-live" href="${leg.live}" target="_blank" rel="noopener">Apri su Google Maps ↗</a>` : ''}
+        ${isTrain ? `
+          <div class="leg-refresh-row">
+            <button type="button" class="leg-refresh" data-leg-id="${leg.id}">Aggiorna orario ↻</button>
+            <span class="leg-refresh-msg"></span>
+          </div>` : (leg.live ? `<a class="leg-gmaps" href="${leg.live}" target="_blank" rel="noopener">Apri su Google Maps ↗</a>` : '')}
       `;
       row.appendChild(routeCell);
 
       row.appendChild(buildCellGroup(leg));
 
       boardBody.appendChild(row);
+
+      if (isTrain) {
+        const btn = routeCell.querySelector('.leg-refresh');
+        const msgEl = routeCell.querySelector('.leg-refresh-msg');
+        btn.addEventListener('click', () => refreshTrainLeg(leg, btn, msgEl));
+      }
     });
 
     updateInstallHint();
+  }
+
+  function refreshTrainLeg(leg, btn, msgEl) {
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Aggiorno…';
+    msgEl.textContent = '';
+    msgEl.className = 'leg-refresh-msg';
+
+    vtRefreshTrainLeg(leg)
+      .then(({ approx }) => {
+        const depEl = document.getElementById(`time-${leg.id}-dep`);
+        const arrEl = document.getElementById(`time-${leg.id}-arr`);
+        if (depEl) depEl.textContent = leg.depTime || 'consulta live';
+        if (arrEl) arrEl.textContent = leg.arrTime || 'consulta live';
+
+        const depFlap = document.querySelector(`[data-flap="${leg.id}-dep"]`);
+        const arrFlap = document.querySelector(`[data-flap="${leg.id}-arr"]`);
+        const depVal = getPlatform(leg.id, 'dep');
+        const arrVal = getPlatform(leg.id, 'arr');
+        if (depFlap) { depFlap.textContent = depVal || '?'; depFlap.className = 'flap flap-flip ' + (depVal ? 'is-set' : 'is-empty'); }
+        if (arrFlap) { arrFlap.textContent = arrVal || '?'; arrFlap.className = 'flap flap-flip ' + (arrVal ? 'is-set' : 'is-empty'); }
+
+        msgEl.textContent = (leg.trainLabel ? leg.trainLabel + ' — ' : '') + (approx ? 'corrispondenza approssimativa, verifica.' : 'aggiornato ora.');
+        msgEl.className = 'leg-refresh-msg ' + (approx ? 'is-warn' : 'is-ok');
+      })
+      .catch((err) => {
+        const isNetErr = err instanceof TypeError;
+        msgEl.textContent = isNetErr
+          ? 'ViaggiaTreno non raggiungibile da qui (possibile blocco del browser). Controlla su viaggiatreno.it.'
+          : (err.message || 'Errore nell\'aggiornamento.');
+        msgEl.className = 'leg-refresh-msg is-error';
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      });
   }
 
   function buildCellGroup(leg) {
     const group = document.createElement('div');
     group.className = 'leg-cell-group';
 
-    group.appendChild(buildTimeCell('Partenza', leg.depTime || 'consulta live'));
+    group.appendChild(buildTimeCell('Partenza', leg.depTime || 'consulta live', `time-${leg.id}-dep`));
     group.appendChild(buildFlapCell(leg, 'dep', 'Bin. partenza'));
-    group.appendChild(buildTimeCell('Arrivo', leg.arrTime || 'consulta live'));
+    group.appendChild(buildTimeCell('Arrivo', leg.arrTime || 'consulta live', `time-${leg.id}-arr`));
     group.appendChild(buildFlapCell(leg, 'arr', 'Bin. arrivo'));
 
     return group;
   }
 
-  function buildTimeCell(label, value) {
+  function buildTimeCell(label, value, id) {
     const cell = document.createElement('div');
     cell.className = 'time-cell';
-    cell.innerHTML = `<span class="cell-label">${label}</span><span class="time-value">${value}</span>`;
+    cell.innerHTML = `<span class="cell-label">${label}</span><span class="time-value" id="${id || ''}">${value}</span>`;
     return cell;
   }
 
@@ -544,6 +479,7 @@
 
     const btn = document.createElement('button');
     btn.type = 'button';
+    btn.dataset.flap = `${leg.id}-${which}`;
     const value = getPlatform(leg.id, which);
     btn.className = 'flap ' + (value ? 'is-set' : 'is-empty');
     btn.textContent = value || '?';
@@ -586,23 +522,21 @@
     if (e.key === 'Escape') closeEditor();
   });
 
-  // ================= Controlli manuali =================
+  // ================= Controlli =================
   toggleOpts.forEach(opt => {
     opt.addEventListener('click', () => {
       toggleOpts.forEach(o => { o.classList.remove('is-active'); o.setAttribute('aria-checked', 'false'); });
       opt.classList.add('is-active');
       opt.setAttribute('aria-checked', 'true');
-      liveActive = false;
       render();
     });
   });
 
-  dateInput.addEventListener('change', () => { if (!liveActive) render(); });
+  dateInput.addEventListener('change', render);
 
   resetBtn.addEventListener('click', () => {
     localStorage.removeItem(STORAGE_KEY);
-    if (liveActive) renderBoard(currentLegs);
-    else render();
+    render();
   });
 
   function updateInstallHint() {
