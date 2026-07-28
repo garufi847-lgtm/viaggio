@@ -62,7 +62,13 @@
   </div>
 </header>
 
+<nav class="page-nav" role="tablist" aria-label="Sezioni">
+  <button type="button" class="page-nav-btn is-active" data-page="trip" role="tab" aria-selected="true">Viaggio</button>
+  <button type="button" class="page-nav-btn" data-page="food" role="tab" aria-selected="false">Locali senza glutine</button>
+</nav>
+
 <main>
+<div id="page-trip" class="page">
   <section class="hotel-card">
     <div class="hotel-head">
       <span class="hotel-name">Hotel Il Telamonio</span>
@@ -95,11 +101,36 @@
     <div class="legend-item"><span class="dot dot-bus"></span> Autobus</div>
     <div class="legend-item"><span class="dot dot-piedi"></span> A piedi</div>
   </section>
+</div>
+
+<div id="page-food" class="page is-hidden">
+  <section class="notes-card live-card">
+    <h2>Locali senza glutine a Talamone</h2>
+    <p>Unico locale di Talamone risultante negli elenchi per celiaci (AIC / Celiachia Italia) al momento della ricerca. Consiglio comunque di chiamare prima e specificare l'intolleranza: gli elenchi online possono non essere aggiornati.</p>
+  </section>
+
+  <section class="food-list">
+    <article class="food-card">
+      <div class="food-head">
+        <span class="food-name">Locanda Dei Mille</span>
+        <span class="food-tag">Segnalato per celiaci</span>
+      </div>
+      <div class="hotel-row"><span class="hotel-label">Indirizzo</span><span>Piazza IV Novembre, 1 · 58015 Talamone GR</span></div>
+      <div class="hotel-row"><span class="hotel-label">Telefono</span><a href="tel:+393803088229">380 308 8229</a></div>
+      <p class="food-note">Ristorante di pesce nel centro storico. Prima di andare, chiedi conferma telefonica sulla gestione della cucina senza glutine.</p>
+    </article>
+  </section>
+
+  <section class="notes-card">
+    <h2>Altre opzioni nei dintorni</h2>
+    <p>Non ho trovato altri locali con segnalazione specifica per celiaci a Talamone stessa negli elenchi consultati (i comuni vicini come Orbetello e Grosseto ne hanno altri). Per un elenco sempre aggiornato, la fonte più affidabile resta l'app ufficiale AIC Mobile o il sito celiachia.it, cercando "Talamone" o i comuni limitrofi.</p>
+  </section>
+</div>
 </main>
 
 <footer class="app-footer">
   <button id="reset-btn" type="button">Azzera binari salvati</button>
-  <span class="build-tag">build 12</span>
+  <span class="build-tag">build 13</span>
   <span id="install-hint" class="install-hint" hidden>Aggiungi alla schermata Home per usarla offline in stazione →</span>
 </footer>
 

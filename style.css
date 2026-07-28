@@ -221,6 +221,48 @@ main{position:relative; z-index:1; padding:20px; display:flex; flex-direction:co
   100%{transform:rotateX(0deg);}
 }
 
+.page-nav{
+  position:relative; z-index:1;
+  display:flex; gap:8px;
+  padding:12px 20px 0;
+  max-width:820px; margin:0 auto;
+}
+.page-nav-btn{
+  background:transparent;
+  border:1px solid var(--line);
+  color:var(--text-dim);
+  border-radius:20px;
+  padding:8px 16px;
+  font-family:var(--body);
+  font-size:.8rem;
+  font-weight:600;
+  cursor:pointer;
+}
+.page-nav-btn.is-active{background:var(--teal); color:#08201d; border-color:var(--teal);}
+.page.is-hidden{display:none;}
+
+.food-list{display:flex; flex-direction:column; gap:12px;}
+.food-card{
+  background:var(--board);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:16px 20px;
+  display:flex; flex-direction:column; gap:8px;
+}
+.food-head{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;}
+.food-name{font-family:var(--display); font-weight:800; font-size:1rem;}
+.food-tag{
+  background:rgba(63,184,175,.15);
+  color:var(--teal);
+  font-size:.68rem;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  padding:3px 10px;
+  border-radius:20px;
+}
+.food-note{margin:2px 0 0; font-size:.8rem; color:var(--text-dim); line-height:1.4;}
+
 .hotel-card{
   background:var(--board);
   border:1px solid var(--amber-dim);

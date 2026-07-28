@@ -162,6 +162,23 @@
     return { approx };
   }
 
+  // ================= Navigazione tra pagine =================
+  document.querySelectorAll('.page-nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.page-nav-btn').forEach(b => {
+        b.classList.remove('is-active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('is-active');
+      btn.setAttribute('aria-selected', 'true');
+
+      const target = btn.dataset.page;
+      document.querySelectorAll('.page').forEach(p => {
+        p.classList.toggle('is-hidden', p.id !== `page-${target}`);
+      });
+    });
+  });
+
   // ================= Direzione (andata/ritorno) e profilo (io / con papà) =================
   function updateHeaderForDirection() {
     const sp = START_POINTS[profile];
