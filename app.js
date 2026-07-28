@@ -406,7 +406,8 @@
           <div class="leg-refresh-row">
             <button type="button" class="leg-refresh" data-leg-id="${leg.id}">Aggiorna orario ↻</button>
             <span class="leg-refresh-msg"></span>
-          </div>` : (leg.live ? `<a class="leg-gmaps" href="${leg.live}" target="_blank" rel="noopener">Apri su Google Maps ↗</a>` : '')}
+          </div>` : ''}
+        ${leg.live ? `<a class="leg-gmaps" href="${leg.live}" target="_blank" rel="noopener">Apri su Google Maps ↗</a>` : ''}
       `;
       row.appendChild(routeCell);
 
@@ -435,8 +436,8 @@
       .then(({ approx }) => {
         const depEl = document.getElementById(`time-${leg.id}-dep`);
         const arrEl = document.getElementById(`time-${leg.id}-arr`);
-        if (depEl) depEl.textContent = leg.depTime || 'consulta live';
-        if (arrEl) arrEl.textContent = leg.arrTime || 'consulta live';
+        if (depEl) depEl.textContent = leg.depTime || '—';
+        if (arrEl) arrEl.textContent = leg.arrTime || '—';
 
         const depFlap = document.querySelector(`[data-flap="${leg.id}-dep"]`);
         const arrFlap = document.querySelector(`[data-flap="${leg.id}-arr"]`);
@@ -465,9 +466,9 @@
     const group = document.createElement('div');
     group.className = 'leg-cell-group';
 
-    group.appendChild(buildTimeCell('Partenza', leg.depTime || 'consulta live', `time-${leg.id}-dep`));
+    group.appendChild(buildTimeCell('Partenza', leg.depTime || '—', `time-${leg.id}-dep`));
     group.appendChild(buildFlapCell(leg, 'dep', 'Bin. partenza'));
-    group.appendChild(buildTimeCell('Arrivo', leg.arrTime || 'consulta live', `time-${leg.id}-arr`));
+    group.appendChild(buildTimeCell('Arrivo', leg.arrTime || '—', `time-${leg.id}-arr`));
     group.appendChild(buildFlapCell(leg, 'arr', 'Bin. arrivo'));
 
     return group;
