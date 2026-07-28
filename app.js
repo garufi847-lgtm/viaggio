@@ -38,6 +38,28 @@
     `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(from)}&destination=${encodeURIComponent(to)}&travelmode=transit`;
 
   // ================= ViaggiaTreno (gratis, senza chiave, solo treni) =================
+  // ViaggiaTreno non manda header CORS: passiamo da un proxy pubblico gratuito.
+  // Proviamo più proxy in sequenza in caso uno sia giù o troppo lento.
+  const CORS_PROXIES = [
+    (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+    (url) => 'https://corsproxy.io/?url=' + encodeURIComponent(url)
+  ];
+
+  async function vtFetchRaw(path) {
+    const targetUrl = VT_BASE + path;
+    let lastErr = null;
+    for (const proxy of CORS_PROXIES) {
+      try {
+        const res = await fetch(proxy(targetUrl));
+        if (!res.ok) { lastErr = new Error('ViaggiaTreno ha risposto con errore (' + res.status + ').'); continue; }
+        return res;
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    throw lastErr || new Error('Nessun proxy disponibile al momento.');
+  }
+
   function vtLoadCache() {
     try { return JSON.parse(localStorage.getItem(VT_CACHE_KEY)) || {}; }
     catch { return {}; }
@@ -52,8 +74,7 @@
     if (cache[key]) return cache[key];
 
     const query = name.split(',')[0].split('(')[0].trim(); // "Roma Termini" da "Roma Termini, ..."
-    const res = await fetch(VT_BASE + 'autocompletaStazione/' + encodeURIComponent(query));
-    if (!res.ok) throw new Error('ViaggiaTreno non raggiungibile (stazione "' + query + '").');
+    const res = await vtFetchRaw('autocompletaStazione/' + encodeURIComponent(query));
     const text = await res.text();
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) throw new Error('Nessuna stazione trovata per "' + query + '".');
@@ -79,8 +100,7 @@
   }
 
   async function vtFetchJSON(path) {
-    const res = await fetch(VT_BASE + path);
-    if (!res.ok) throw new Error('ViaggiaTreno ha risposto con errore (' + res.status + ').');
+    const res = await vtFetchRaw(path);
     return res.json();
   }
 
@@ -431,7 +451,7 @@
       .catch((err) => {
         const isNetErr = err instanceof TypeError;
         msgEl.textContent = isNetErr
-          ? 'ViaggiaTreno non raggiungibile da qui (possibile blocco del browser). Controlla su viaggiatreno.it.'
+          ? 'Anche il proxy CORS non risponde al momento. Riprova tra poco o controlla su viaggiatreno.it.'
           : (err.message || 'Errore nell\'aggiornamento.');
         msgEl.className = 'leg-refresh-msg is-error';
       })
