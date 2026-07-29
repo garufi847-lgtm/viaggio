@@ -265,6 +265,54 @@ main{position:relative; z-index:1; padding:20px; display:flex; flex-direction:co
 }
 .food-note{margin:2px 0 0; font-size:.8rem; color:var(--text-dim); line-height:1.4;}
 
+.fab{
+  position:fixed; right:20px; bottom:70px; z-index:15;
+  width:56px; height:56px;
+  border-radius:50%;
+  background:var(--amber);
+  border:none;
+  font-size:1.5rem;
+  box-shadow:0 10px 24px rgba(0,0,0,.4);
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.fab:hover{transform:translateY(-2px);}
+
+.checklist-sheet{max-height:80vh; overflow-y:auto;}
+.checklist-items{display:flex; flex-direction:column; gap:2px; margin-bottom:16px;}
+.checklist-item{
+  display:flex; align-items:center; gap:12px;
+  padding:12px 4px;
+  border-bottom:1px solid var(--line);
+  font-size:.9rem;
+  cursor:pointer;
+}
+.checklist-item:last-child{border-bottom:none;}
+.checklist-item input[type="checkbox"]{width:20px; height:20px; accent-color:var(--teal); flex-shrink:0;}
+.checklist-item.is-checked span{color:var(--text-dim); text-decoration:line-through;}
+
+.tickets-card{
+  background:var(--board);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:18px 20px;
+}
+.tickets-head{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:4px;}
+.tickets-head h2{margin:0; font-family:var(--display); font-size:.95rem;}
+.ticket-add-btn{flex:none; min-width:0; padding:8px 14px; font-size:.78rem;}
+.ticket-grid{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;}
+.ticket-thumb{position:relative; width:100px;}
+.ticket-thumb img{width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:8px; border:1px solid var(--line); cursor:zoom-in; display:block;}
+.ticket-thumb figcaption{font-size:.65rem; color:var(--text-dim); margin-top:3px; text-align:center; word-break:break-word;}
+.ticket-remove{
+  position:absolute; top:-6px; right:-6px;
+  width:22px; height:22px; border-radius:50%;
+  background:var(--warn); color:#2a0f08; border:none;
+  font-size:.8rem; font-weight:700; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.ticket-empty{font-size:.8rem; color:var(--text-dim); margin-top:8px;}
+
 .consent-modal{
   position:fixed; inset:0; z-index:40;
   background:rgba(0,0,0,.85);

@@ -69,6 +69,7 @@
 <nav class="page-nav" role="tablist" aria-label="Sezioni">
   <button type="button" class="page-nav-btn is-active" data-page="trip" role="tab" aria-selected="true">Viaggio</button>
   <button type="button" class="page-nav-btn" data-page="food" role="tab" aria-selected="false">Locali senza glutine</button>
+  <button type="button" class="page-nav-btn" data-page="beaches" role="tab" aria-selected="false">Spiagge libere</button>
 </nav>
 
 <main>
@@ -122,6 +123,16 @@
     <div class="legend-item"><span class="dot dot-piedi"></span> A piedi</div>
   </section>
 
+  <section class="tickets-card">
+    <div class="tickets-head">
+      <h2>Portafoglio biglietti</h2>
+      <button type="button" id="ticket-add-btn" class="action-btn ticket-add-btn">+ Aggiungi biglietto</button>
+    </div>
+    <p class="sheet-sub">Foto o PNR dei biglietti già comprati — salvati sul telefono, disponibili anche offline.</p>
+    <div id="ticket-grid" class="ticket-grid"></div>
+    <input type="file" id="ticket-file-input" accept="image/*" capture="environment" hidden>
+  </section>
+
   <section class="contacts-card">
     <h2>Numeri utili a Talamone</h2>
     <div class="contact-row"><span class="contact-label">Emergenza generica</span><a href="tel:112">112</a></div>
@@ -139,7 +150,7 @@
 <div id="page-food" class="page is-hidden">
   <section class="notes-card live-card">
     <h2>Locali senza glutine a Talamone</h2>
-    <p>Unico locale di Talamone risultante negli elenchi per celiaci (AIC / Celiachia Italia) al momento della ricerca. Consiglio comunque di chiamare prima e specificare l'intolleranza: gli elenchi online possono non essere aggiornati.</p>
+    <p>Locali segnalati per celiaci a Talamone e nella vicina Orbetello (comoda tappa sul tragitto). Consiglio comunque di chiamare prima e specificare l'intolleranza: gli elenchi online possono non essere aggiornati.</p>
   </section>
 
   <section class="food-list">
@@ -150,20 +161,104 @@
       </div>
       <div class="hotel-row"><span class="hotel-label">Indirizzo</span><span>Piazza IV Novembre, 1 · 58015 Talamone GR</span></div>
       <div class="hotel-row"><span class="hotel-label">Telefono</span><a href="tel:+393803088229">380 308 8229</a></div>
-      <p class="food-note">Ristorante di pesce nel centro storico. Prima di andare, chiedi conferma telefonica sulla gestione della cucina senza glutine.</p>
+      <p class="food-note">Ristorante di pesce nel centro storico di Talamone. Prima di andare, chiedi conferma telefonica sulla gestione della cucina senza glutine.</p>
+    </article>
+
+    <article class="food-card">
+      <div class="food-head">
+        <span class="food-name">Pizzeria Trattoria La Bersagliera</span>
+        <span class="food-tag">Pizza senza glutine</span>
+      </div>
+      <div class="hotel-row"><span class="hotel-label">Indirizzo</span><span>Via Roma, 18 · 58015 Orbetello GR</span></div>
+      <div class="hotel-row"><span class="hotel-label">Telefono</span><a href="tel:+390564867319">0564 867319</a></div>
+      <p class="food-note">A Orbetello (sulla strada del ritorno da Talamone). Molto richiesta: prenotazione consigliata. Chiuso il mercoledì.</p>
+    </article>
+
+    <article class="food-card">
+      <div class="food-head">
+        <span class="food-name">Le Logge – Gelateria naturale</span>
+        <span class="food-tag">Gelato senza glutine</span>
+      </div>
+      <div class="hotel-row"><span class="hotel-label">Indirizzo</span><span>Corso Italia, 78 · 58015 Orbetello GR</span></div>
+      <div class="hotel-row"><span class="hotel-label">Telefono</span><a href="tel:+390564868086">0564 868086</a></div>
+      <p class="food-note">Coni e cialde senza glutine, oltre a gusti anche senza lattosio.</p>
+    </article>
+
+    <article class="food-card">
+      <div class="food-head">
+        <span class="food-name">Ristorante Il Cavaliere</span>
+        <span class="food-tag">Attento ai celiaci</span>
+      </div>
+      <div class="hotel-row"><span class="hotel-label">Indirizzo</span><span>Via Giancarlo Pantini, 3 · 58015 Orbetello Scalo GR</span></div>
+      <div class="hotel-row"><span class="hotel-label">Telefono</span><a href="tel:+390564864342">0564 864342</a></div>
+      <p class="food-note">Vicino alla stazione di Orbetello. Trattoria di pesce, recensioni confermano attenzione alla celiachia. Chiuso il mercoledì.</p>
     </article>
   </section>
 
   <section class="notes-card">
     <h2>Altre opzioni nei dintorni</h2>
-    <p>Non ho trovato altri locali con segnalazione specifica per celiaci a Talamone stessa negli elenchi consultati (i comuni vicini come Orbetello e Grosseto ne hanno altri). Per un elenco sempre aggiornato, la fonte più affidabile resta l'app ufficiale AIC Mobile o il sito celiachia.it, cercando "Talamone" o i comuni limitrofi.</p>
+    <p>A Talamone stessa risulta solo Locanda Dei Mille negli elenchi consultati; gli altri tre sono a Orbetello, comoda tappa sul tragitto (stazione o centro). Per un elenco sempre aggiornato, la fonte più affidabile resta l'app ufficiale AIC Mobile o il sito celiachia.it.</p>
+  </section>
+</div>
+
+<div id="page-beaches" class="page is-hidden">
+  <section class="notes-card live-card">
+    <h2>Spiagge libere in zona</h2>
+    <p>Le più vicine a Talamone, in ordine di distanza. "Libera" qui significa accesso gratuito, anche se spesso convivono con qualche stabilimento a pagamento sullo stesso arenile.</p>
+  </section>
+
+  <section class="food-list">
+    <article class="food-card">
+      <div class="food-head">
+        <span class="food-name">Bagno delle Donne</span>
+        <span class="food-tag">A Talamone</span>
+      </div>
+      <p class="food-note">Piccola cala ghiaiosa incastonata tra gli scogli, a pochi passi dal centro del paese. Comoda se non vuoi allontanarti dall'hotel.</p>
+      <a class="leg-gmaps" href="https://www.google.com/maps/search/?api=1&query=Bagno+delle+Donne+Talamone" target="_blank" rel="noopener">Apri su Google Maps ↗</a>
+    </article>
+
+    <article class="food-card">
+      <div class="food-head">
+        <span class="food-name">Spiaggia della Fertilia</span>
+        <span class="food-tag">A Talamone</span>
+      </div>
+      <p class="food-note">Circa 4 km, quasi interamente libera. Spesso ventosa: molto frequentata da vela e kitesurf, meno adatta a chi cerca mare piatto.</p>
+      <a class="leg-gmaps" href="https://www.google.com/maps/search/?api=1&query=Spiaggia+della+Fertilia+Talamone" target="_blank" rel="noopener">Apri su Google Maps ↗</a>
+    </article>
+
+    <article class="food-card">
+      <div class="food-head">
+        <span class="food-name">Spiaggia dell'Osa</span>
+        <span class="food-tag">Fonteblanda, ~8 km</span>
+      </div>
+      <p class="food-note">Sabbiosa, circa 6 km, fondale basso adatto ai bambini, pineta alle spalle. In gran parte libera, con alcuni stabilimenti.</p>
+      <a class="leg-gmaps" href="https://www.google.com/maps/search/?api=1&query=Spiaggia+dell%27Osa+Fonteblanda" target="_blank" rel="noopener">Apri su Google Maps ↗</a>
+    </article>
+
+    <article class="food-card">
+      <div class="food-head">
+        <span class="food-name">Spiaggia della Giannella</span>
+        <span class="food-tag">Orbetello, ~20 km</span>
+      </div>
+      <p class="food-note">Tombolo di circa 8 km, quasi interamente libera, sabbia dorata e fondali bassi. Sulla strada verso Monte Argentario.</p>
+      <a class="leg-gmaps" href="https://www.google.com/maps/search/?api=1&query=Spiaggia+della+Giannella+Orbetello" target="_blank" rel="noopener">Apri su Google Maps ↗</a>
+    </article>
+
+    <article class="food-card">
+      <div class="food-head">
+        <span class="food-name">Spiaggia della Feniglia</span>
+        <span class="food-tag">Orbetello, ~25 km</span>
+      </div>
+      <p class="food-note">Circa 6-7 km, davanti alla riserva naturale della Duna Feniglia (percorribile solo a piedi o in bici, facili incontri con i daini). Lunghi tratti liberi, più isolata verso Ansedonia.</p>
+      <a class="leg-gmaps" href="https://www.google.com/maps/search/?api=1&query=Spiaggia+della+Feniglia+Orbetello" target="_blank" rel="noopener">Apri su Google Maps ↗</a>
+    </article>
   </section>
 </div>
 </main>
 
 <footer class="app-footer">
   <button id="reset-btn" type="button">Azzera binari salvati</button>
-  <span class="build-tag">build 24</span>
+  <span class="build-tag">build 28</span>
   <span id="install-hint" class="install-hint" hidden>Aggiungi alla schermata Home per usarla offline in stazione →</span>
 </footer>
 
@@ -181,6 +276,20 @@
 
 <div id="lightbox" class="lightbox" hidden>
   <img id="lightbox-img" src="" alt="">
+</div>
+
+<button type="button" id="checklist-fab" class="fab" aria-label="Apri checklist bagaglio">🧳</button>
+
+<div id="checklist-modal" class="sheet" hidden>
+  <div class="sheet-inner checklist-sheet">
+    <h3>Checklist bagaglio</h3>
+    <p class="sheet-sub">Spunta quello che hai già messo in valigia — resta salvato sul telefono.</p>
+    <div id="checklist-items" class="checklist-items"></div>
+    <div class="sheet-actions">
+      <button id="checklist-reset" type="button" class="btn-ghost">Azzera spunte</button>
+      <button id="checklist-close" type="button" class="btn-solid">Chiudi</button>
+    </div>
+  </div>
 </div>
 
 <script src="photos.js"></script>

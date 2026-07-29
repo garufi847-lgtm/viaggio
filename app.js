@@ -168,6 +168,117 @@
     return { approx };
   }
 
+  // ================= Checklist bagaglio =================
+  const CHECKLIST_KEY = 'talamone-checklist-v1';
+  const CHECKLIST_ITEMS = [
+    { id: 'documenti', label: 'Documenti (carta d\'identità / tessera sanitaria)' },
+    { id: 'biglietti', label: 'Biglietti treno/bus' },
+    { id: 'costume', label: 'Costume da bagno' },
+    { id: 'crema', label: 'Crema solare' },
+    { id: 'telo', label: 'Telo/asciugamano mare' },
+    { id: 'occhiali', label: 'Occhiali da sole' },
+    { id: 'cappello', label: 'Cappello' },
+    { id: 'ciabatte', label: 'Ciabatte' },
+    { id: 'caricabatterie', label: 'Caricabatterie' },
+    { id: 'powerbank', label: 'Power bank' },
+    { id: 'igiene', label: 'Spazzolino e dentifricio' },
+    { id: 'insulina', label: 'Insulina' },
+    { id: 'senzaglutine', label: 'Prodotti senza glutine' }
+  ];
+
+  function loadChecklistState() {
+    try { return JSON.parse(localStorage.getItem(CHECKLIST_KEY)) || {}; }
+    catch { return {}; }
+  }
+  function saveChecklistState(state) {
+    localStorage.setItem(CHECKLIST_KEY, JSON.stringify(state));
+  }
+
+  function renderChecklist() {
+    const state = loadChecklistState();
+    const container = document.getElementById('checklist-items');
+    container.innerHTML = '';
+    CHECKLIST_ITEMS.forEach(item => {
+      const row = document.createElement('label');
+      row.className = 'checklist-item' + (state[item.id] ? ' is-checked' : '');
+      row.innerHTML = `<input type="checkbox" ${state[item.id] ? 'checked' : ''}><span>${item.label}</span>`;
+      row.querySelector('input').addEventListener('change', (e) => {
+        const st = loadChecklistState();
+        st[item.id] = e.target.checked;
+        saveChecklistState(st);
+        row.classList.toggle('is-checked', e.target.checked);
+      });
+      container.appendChild(row);
+    });
+  }
+
+  const checklistModal = document.getElementById('checklist-modal');
+  document.getElementById('checklist-fab').addEventListener('click', () => {
+    renderChecklist();
+    checklistModal.hidden = false;
+  });
+  document.getElementById('checklist-close').addEventListener('click', () => { checklistModal.hidden = true; });
+  checklistModal.addEventListener('click', (e) => { if (e.target === checklistModal) checklistModal.hidden = true; });
+  document.getElementById('checklist-reset').addEventListener('click', () => {
+    saveChecklistState({});
+    renderChecklist();
+  });
+
+  // ================= Portafoglio biglietti =================
+  const TICKETS_KEY = 'talamone-tickets-v1';
+
+  function loadTickets() {
+    try { return JSON.parse(localStorage.getItem(TICKETS_KEY)) || []; }
+    catch { return []; }
+  }
+  function saveTickets(tickets) {
+    localStorage.setItem(TICKETS_KEY, JSON.stringify(tickets));
+  }
+
+  function renderTickets() {
+    const tickets = loadTickets();
+    const grid = document.getElementById('ticket-grid');
+    grid.innerHTML = '';
+    if (!tickets.length) {
+      grid.innerHTML = '<span class="ticket-empty">Nessun biglietto salvato.</span>';
+      return;
+    }
+    tickets.forEach(t => {
+      const thumb = document.createElement('figure');
+      thumb.className = 'ticket-thumb';
+      thumb.innerHTML = `
+        <img src="${t.dataUrl}" alt="${t.label}">
+        <figcaption>${t.label}</figcaption>
+        <button type="button" class="ticket-remove" aria-label="Rimuovi ${t.label}">×</button>
+      `;
+      thumb.querySelector('img').addEventListener('click', () => openLightbox(t.dataUrl, t.label));
+      thumb.querySelector('.ticket-remove').addEventListener('click', () => {
+        saveTickets(loadTickets().filter(x => x.id !== t.id));
+        renderTickets();
+      });
+      grid.appendChild(thumb);
+    });
+  }
+
+  document.getElementById('ticket-add-btn').addEventListener('click', () => {
+    document.getElementById('ticket-file-input').click();
+  });
+
+  document.getElementById('ticket-file-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    const label = prompt('Nome del biglietto (es. "Treno 4130", "Bus 390 ritorno")', '') || 'Biglietto';
+    const reader = new FileReader();
+    reader.onload = () => {
+      const tickets = loadTickets();
+      tickets.push({ id: 'tk-' + Date.now(), label, dataUrl: reader.result });
+      saveTickets(tickets);
+      renderTickets();
+    };
+    reader.readAsDataURL(file);
+  });
+
   // ================= Popup di avviso all'apertura =================
   const consentModal = document.getElementById('consent-modal');
   function dismissConsent() { consentModal.hidden = true; }
@@ -671,6 +782,7 @@
   render();
   updateOfflineBanner();
   loadWeather();
+  renderTickets();
 
   // ================= Service worker =================
   if ('serviceWorker' in navigator) {
