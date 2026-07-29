@@ -18,6 +18,8 @@
 
 <div class="platform-glow" aria-hidden="true"></div>
 
+<div id="offline-banner" class="offline-banner" hidden>Sei offline — orari live e mappe non disponibili, il resto funziona lo stesso</div>
+
 <header class="app-header">
   <div class="route-title">
     <span class="stop" id="stop-from">MONTEROTONDO</span>
@@ -70,6 +72,22 @@
     <div class="hotel-row"><span class="hotel-label">Telefono</span><a href="tel:+3905641810007">0564 181 0007</a></div>
   </section>
 
+  <section class="weather-card" id="weather-card" hidden>
+    <div class="weather-main">
+      <span class="weather-icon" id="weather-icon">☀️</span>
+      <div>
+        <span class="weather-temp" id="weather-temp">—</span>
+        <span class="weather-desc" id="weather-desc">—</span>
+      </div>
+    </div>
+    <span class="weather-place">Talamone</span>
+  </section>
+
+  <div class="action-row">
+    <button type="button" id="calendar-btn" class="action-btn">📅 Aggiungi al calendario</button>
+    <button type="button" id="share-btn" class="action-btn">↗ Condividi tragitto</button>
+  </div>
+
   <section class="notes-card live-card">
     <h2>Come funziona questo tabellone</h2>
     <p>I binari reali vengono assegnati da RFI/Trenitalia solo poche ore prima — e non esiste un dato pubblico affidabile con largo anticipo. Ogni tratta ha un link diretto a Google Maps per controllare orari aggiornati; quando scopri il binario (a casa o in stazione) segnalo qui: resta salvato sul telefono per tutto il viaggio.</p>
@@ -92,6 +110,19 @@
     <div class="legend-item"><span class="dot dot-metro"></span> Metro</div>
     <div class="legend-item"><span class="dot dot-bus"></span> Autobus</div>
     <div class="legend-item"><span class="dot dot-piedi"></span> A piedi</div>
+  </section>
+
+  <section class="contacts-card">
+    <h2>Numeri utili a Talamone</h2>
+    <div class="contact-row"><span class="contact-label">Emergenza generica</span><a href="tel:112">112</a></div>
+    <div class="contact-row"><span class="contact-label">Capitaneria di Porto (Talamone)</span><a href="tel:+390564887003">0564 887003</a></div>
+    <div class="contact-row"><span class="contact-label">Farmacia (Fonteblanda)</span><a href="tel:+390564885541">0564 885541</a></div>
+    <div class="contact-row"><span class="contact-label">Guardia Medica (Orbetello)</span><a href="tel:+390564869316">0564 869316</a></div>
+    <div class="contact-row"><span class="contact-label">Carabinieri (Fonteblanda)</span><a href="tel:+390564885512">0564 885512</a></div>
+    <div class="contact-row"><span class="contact-label">Taxi Autonoleggio Fante</span><a href="tel:+390564606364">0564 606364</a></div>
+    <div class="contact-row"><span class="contact-label">Servizio Taxi</span><a href="tel:+393356458456">335 6458456</a></div>
+    <div class="contact-row"><span class="contact-label">Ufficio Postale Talamone</span><a href="tel:+390564887200">0564 887200</a></div>
+    <p class="contacts-note">Fonte: numeri pubblicati su talamone.it — verifica sempre in caso di emergenza reale chiamando il 112.</p>
   </section>
 </div>
 
@@ -122,7 +153,7 @@
 
 <footer class="app-footer">
   <button id="reset-btn" type="button">Azzera binari salvati</button>
-  <span class="build-tag">build 19</span>
+  <span class="build-tag">build 20</span>
   <span id="install-hint" class="install-hint" hidden>Aggiungi alla schermata Home per usarla offline in stazione →</span>
 </footer>
 

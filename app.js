@@ -480,7 +480,7 @@
   });
 
   // ================= Controlli =================
-  dateInput.addEventListener('change', render);
+  dateInput.addEventListener('change', () => { render(); loadWeather(); });
 
   resetBtn.addEventListener('click', () => {
     localStorage.removeItem(STORAGE_KEY);
@@ -492,6 +492,126 @@
     document.getElementById('install-hint').hidden = !!isStandalone;
   }
 
+  // ================= Meteo (Open-Meteo, gratis, senza chiave) =================
+  const WEATHER_CODES = {
+    0: ['☀️', 'Sereno'], 1: ['🌤️', 'Poco nuvoloso'], 2: ['⛅', 'Parz. nuvoloso'], 3: ['☁️', 'Coperto'],
+    45: ['🌫️', 'Nebbia'], 48: ['🌫️', 'Nebbia'],
+    51: ['🌦️', 'Pioviggine'], 53: ['🌦️', 'Pioviggine'], 55: ['🌦️', 'Pioviggine'],
+    61: ['🌧️', 'Pioggia debole'], 63: ['🌧️', 'Pioggia'], 65: ['🌧️', 'Pioggia forte'],
+    71: ['🌨️', 'Neve'], 73: ['🌨️', 'Neve'], 75: ['🌨️', 'Neve forte'],
+    80: ['🌦️', 'Rovesci'], 81: ['🌦️', 'Rovesci'], 82: ['⛈️', 'Rovesci forti'],
+    95: ['⛈️', 'Temporale'], 96: ['⛈️', 'Temporale con grandine'], 99: ['⛈️', 'Temporale con grandine']
+  };
+
+  async function loadWeather() {
+    const card = document.getElementById('weather-card');
+    try {
+      const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=42.5536&longitude=11.1345&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Europe%2FRome&forecast_days=14');
+      if (!res.ok) return;
+      const data = await res.json();
+      const targetDate = dateInput.value;
+      let idx = data.daily.time.indexOf(targetDate);
+      if (idx === -1) idx = 0; // fuori dai 14 giorni disponibili: mostra oggi come riferimento
+
+      const code = data.daily.weathercode[idx];
+      const [icon, desc] = WEATHER_CODES[code] || ['🌡️', 'N/D'];
+      const max = Math.round(data.daily.temperature_2m_max[idx]);
+      const min = Math.round(data.daily.temperature_2m_min[idx]);
+
+      document.getElementById('weather-icon').textContent = icon;
+      document.getElementById('weather-temp').textContent = `${min}° / ${max}°`;
+      document.getElementById('weather-desc').textContent = desc + (idx === 0 && targetDate !== data.daily.time[0] ? ' (oggi, data fuori previsione)' : '');
+      card.hidden = false;
+    } catch {
+      card.hidden = true;
+    }
+  }
+
+  // ================= Banner offline =================
+  function updateOfflineBanner() {
+    document.getElementById('offline-banner').hidden = navigator.onLine;
+  }
+  window.addEventListener('online', updateOfflineBanner);
+  window.addEventListener('offline', updateOfflineBanner);
+
+  // ================= Aggiungi al calendario (.ics) =================
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function icsDate(dateStr, timeStr) {
+    const clean = (timeStr.match(/^\d{2}:\d{2}/) || [])[0];
+    if (!clean) return null;
+    return dateStr.replace(/-/g, '') + 'T' + clean.replace(':', '') + '00';
+  }
+
+  function buildIcs(legs, dateStr) {
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Talamone Trip//IT'];
+    let count = 0;
+    legs.forEach(leg => {
+      const dtStart = icsDate(dateStr, leg.depTime || '');
+      if (!dtStart) return;
+      const dtEnd = icsDate(dateStr, leg.arrTime || '') || dtStart;
+      count++;
+      lines.push(
+        'BEGIN:VEVENT',
+        'UID:' + leg.id + '-' + dateStr + '@talamone-trip',
+        'DTSTART:' + dtStart,
+        'DTEND:' + dtEnd,
+        'SUMMARY:' + (leg.line || modeLabel[leg.mode]) + ' — ' + leg.from + (leg.to ? ' → ' + leg.to : ''),
+        'DESCRIPTION:' + (leg.note || '').replace(/\n/g, ' '),
+        'END:VEVENT'
+      );
+    });
+    lines.push('END:VCALENDAR');
+    return { ics: lines.join('\r\n'), count };
+  }
+
+  document.getElementById('calendar-btn').addEventListener('click', () => {
+    const { ics, count } = buildIcs(currentLegs, dateInput.value || new Date().toISOString().slice(0, 10));
+    if (!count) {
+      alert('Nessun orario preciso disponibile per questa direzione: aggiungi almeno un orario prima di esportare.');
+      return;
+    }
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'talamone-' + direction + '.ics';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  // ================= Condividi tragitto =================
+  function buildShareText(legs) {
+    const sp = START_POINTS[profile];
+    const header = direction === 'andata'
+      ? `${sp.title} → TALAMONE`
+      : `TALAMONE → ${sp.title}`;
+    const lines = [header, dateInput.value || '', ''];
+    legs.forEach(leg => {
+      const time = leg.depTime ? `${leg.depTime}${leg.arrTime ? ' → ' + leg.arrTime : ''} · ` : '';
+      lines.push(`${modeLabel[leg.mode]} ${time}${leg.line}`);
+      lines.push(`  ${leg.from}${leg.to ? ' → ' + leg.to : ''}`);
+    });
+    return lines.join('\n');
+  }
+
+  document.getElementById('share-btn').addEventListener('click', async () => {
+    const text = buildShareText(currentLegs);
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Tragitto Talamone', text }); }
+      catch { /* utente ha annullato, nessun errore da mostrare */ }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Tragitto copiato negli appunti — incollalo dove vuoi.');
+    } catch {
+      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+    }
+  });
+
   // Data/ora di default: adesso
   (function initDate() {
     const now = new Date();
@@ -502,6 +622,8 @@
 
   updateHeaderForDirection();
   render();
+  updateOfflineBanner();
+  loadWeather();
 
   // ================= Service worker =================
   if ('serviceWorker' in navigator) {

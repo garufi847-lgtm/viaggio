@@ -1,4 +1,4 @@
-const CACHE = 'talamone-trip-v12';
+const CACHE = 'talamone-trip-v13';
 const ASSETS = [
   './',
   './index.html',

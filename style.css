@@ -265,6 +265,63 @@ main{position:relative; z-index:1; padding:20px; display:flex; flex-direction:co
 }
 .food-note{margin:2px 0 0; font-size:.8rem; color:var(--text-dim); line-height:1.4;}
 
+.offline-banner{
+  position:sticky; top:0; z-index:20;
+  background:var(--warn);
+  color:#2a0f08;
+  text-align:center;
+  font-size:.78rem;
+  font-weight:700;
+  padding:8px 16px;
+}
+
+.weather-card{
+  background:var(--board);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.weather-main{display:flex; align-items:center; gap:12px;}
+.weather-icon{font-size:1.8rem;}
+.weather-temp{display:block; font-family:var(--mono); font-size:1.1rem; color:var(--text);}
+.weather-desc{display:block; font-size:.72rem; color:var(--text-dim);}
+.weather-place{font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em;}
+
+.action-row{display:flex; gap:10px; flex-wrap:wrap;}
+.action-btn{
+  flex:1;
+  min-width:150px;
+  background:var(--board);
+  border:1px solid var(--line);
+  color:var(--text);
+  border-radius:12px;
+  padding:12px 14px;
+  font-family:var(--body);
+  font-size:.85rem;
+  font-weight:600;
+  cursor:pointer;
+  min-height:44px;
+}
+.action-btn:hover{border-color:var(--teal-dim); color:var(--teal);}
+.action-btn:disabled{opacity:.6; cursor:default;}
+
+.contacts-card{
+  background:var(--board);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:18px 20px;
+  display:flex; flex-direction:column; gap:10px;
+}
+.contacts-card h2{margin:0 0 4px; font-family:var(--display); font-size:.95rem;}
+.contact-row{display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:.85rem; flex-wrap:wrap;}
+.contact-label{color:var(--text-dim);}
+.contact-row a{color:var(--teal); text-decoration:none; font-family:var(--mono); white-space:nowrap;}
+.contact-row a:hover{color:var(--amber);}
+.contacts-note{margin:6px 0 0; font-size:.68rem; color:var(--text-dim); line-height:1.4;}
+
 .hotel-card{
   background:var(--board);
   border:1px solid var(--amber-dim);
