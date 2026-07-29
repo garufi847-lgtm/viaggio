@@ -554,7 +554,19 @@
   // ================= Service worker =================
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+      navigator.serviceWorker.register('sw.js').then((reg) => {
+        // controlla subito e poi ogni minuto se c'è una versione più nuova sul server
+        reg.update().catch(() => {});
+        setInterval(() => reg.update().catch(() => {}), 60 * 1000);
+      }).catch(() => {});
+
+      // quando un nuovo service worker prende il controllo, ricarica la pagina da solo
+      let alreadyRefreshed = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (alreadyRefreshed) return;
+        alreadyRefreshed = true;
+        window.location.reload();
+      });
     });
   }
 })();
