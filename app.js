@@ -650,6 +650,36 @@
     document.getElementById('install-hint').hidden = !!isStandalone;
   }
 
+  // ================= Countdown alla partenza =================
+  const DEPARTURE_DATETIME = new Date('2026-08-05T10:12:00');
+
+  function updateCountdown() {
+    const banner = document.getElementById('countdown-banner');
+    const now = new Date();
+    const diffMs = DEPARTURE_DATETIME - now;
+
+    if (diffMs <= 0) {
+      banner.hidden = true;
+      return;
+    }
+
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+
+    let text;
+    if (diffDays >= 1) {
+      text = `🚆 Mancano ${diffDays} giorn${diffDays === 1 ? 'o' : 'i'} alla partenza (treno 4130, 10:12 da Roma Termini)`;
+    } else {
+      text = `🚆 Si parte oggi alle 10:12 da Roma Termini — mancano ${diffHours} ${diffHours === 1 ? 'ora' : 'ore'}`;
+    }
+
+    banner.textContent = text;
+    banner.hidden = false;
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 60 * 1000);
+
   // ================= Meteo (Open-Meteo, gratis, senza chiave) =================
   const WEATHER_CODES = {
     0: ['☀️', 'Sereno'], 1: ['🌤️', 'Poco nuvoloso'], 2: ['⛅', 'Parz. nuvoloso'], 3: ['☁️', 'Coperto'],

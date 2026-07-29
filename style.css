@@ -391,6 +391,19 @@ main{position:relative; z-index:1; padding:20px; display:flex; flex-direction:co
 .contact-row a:hover{color:var(--amber);}
 .contacts-note{margin:6px 0 0; font-size:.68rem; color:var(--text-dim); line-height:1.4;}
 
+.countdown-banner{
+  background:linear-gradient(135deg, rgba(63,184,175,.15), rgba(247,179,43,.1));
+  border:1px solid var(--teal-dim);
+  border-radius:var(--radius);
+  padding:14px 20px;
+  text-align:center;
+  font-family:var(--display);
+  font-weight:700;
+  font-size:.95rem;
+  color:var(--text);
+}
+.countdown-banner[hidden]{display:none;}
+
 .hotel-card{
   background:var(--board);
   border:1px solid var(--amber-dim);
