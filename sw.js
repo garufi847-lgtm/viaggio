@@ -1,9 +1,10 @@
-const CACHE = 'talamone-trip-v11';
+const CACHE = 'talamone-trip-v12';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './app.js',
+  './photos.js',
   './manifest.json',
   './icons/icon-192.svg',
   './icons/icon-512.svg',

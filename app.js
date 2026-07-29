@@ -254,7 +254,7 @@
       note: '18 fermate da Orbetello a Talamone Porto.',
       depTime: '13:30', arrTime: '13:55',
       live: gmaps('Stazione di Orbetello-Monte Argentario', 'Talamone Porto'),
-      photo: 'assets/fermata-orbetello.jpg',
+      photo: (window.APP_PHOTOS && window.APP_PHOTOS.fermataOrbetello) || 'assets/fermata-orbetello.jpg',
       photoCaption: 'Fermata Marebus di partenza a Orbetello'
     });
 
@@ -383,7 +383,7 @@
         ${leg.note ? `<span class="leg-note">${leg.note}</span>` : ''}
         ${leg.photo ? `
           <figure class="leg-photo">
-            <img src="${leg.photo}" alt="${leg.photoCaption || 'Foto della fermata'}" loading="lazy">
+            <img src="${leg.photo}" alt="${leg.photoCaption || 'Foto della fermata'}" loading="lazy" onerror="this.closest('.leg-photo').classList.add('is-broken')">
             <figcaption>${leg.photoCaption || ''}</figcaption>
           </figure>` : ''}
         ${leg.live ? `<a class="leg-gmaps" href="${leg.live}" target="_blank" rel="noopener">Apri su Google Maps ↗</a>` : ''}
@@ -439,7 +439,7 @@
     btn.dataset.flap = `${leg.id}-${which}`;
     const value = getPlatform(leg.id, which);
     btn.className = 'flap ' + (value ? 'is-set' : 'is-empty');
-    btn.textContent = value || '?';
+    btn.textContent = value || '+';
     btn.setAttribute('aria-label', `${label} per ${leg.from}${leg.to ? ' → ' + leg.to : ''}. ${value ? 'Valore attuale ' + value : 'Non ancora inserito'}`);
     btn.addEventListener('click', () => openEditor(leg, which, label, btn));
     cell.appendChild(btn);
@@ -469,7 +469,7 @@
     if (!editingCtx) return;
     const value = sheetInput.value.trim();
     setPlatform(editingCtx.leg.id, editingCtx.which, value);
-    editingCtx.btn.textContent = value || '?';
+    editingCtx.btn.textContent = value || '+';
     editingCtx.btn.className = 'flap flap-flip ' + (value ? 'is-set' : 'is-empty');
     closeEditor();
   });
