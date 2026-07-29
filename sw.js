@@ -1,4 +1,4 @@
-const CACHE = 'talamone-trip-v8';
+const CACHE = 'talamone-trip-v9';
 const ASSETS = [
   './',
   './index.html',
@@ -7,7 +7,8 @@ const ASSETS = [
   './manifest.json',
   './icons/icon-192.svg',
   './icons/icon-512.svg',
-  './icons/icon-maskable.svg'
+  './icons/icon-maskable.svg',
+  './assets/fermata-orbetello.jpg'
 ];
 
 self.addEventListener('install', (event) => {

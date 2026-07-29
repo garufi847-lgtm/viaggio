@@ -315,6 +315,10 @@ main{position:relative; z-index:1; padding:20px; display:flex; flex-direction:co
   color-scheme:dark;
 }
 
+.leg-photo{margin:6px 0 0; max-width:280px;}
+.leg-photo img{width:100%; display:block; border-radius:10px; border:1px solid var(--line);}
+.leg-photo figcaption{margin-top:4px; font-size:.68rem; color:var(--text-dim);}
+
 .leg-gmaps{
   align-self:flex-start;
   font-size:.72rem;

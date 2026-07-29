@@ -261,18 +261,20 @@
       });
     } else {
       legs.push({
-        id: 'l2', mode: 'treno', line: 'Regionale / IC · linea Tirrenica',
-        from: 'Roma Termini', to: 'Grosseto (o Orbetello)',
-        note: 'Scegli Grosseto o Orbetello in base alla coincidenza bus migliore. Alcuni regionali partono da Tiburtina invece che da Termini: controlla il binario di partenza sul biglietto.',
-        depTime: '', arrTime: '',
-        live: gmaps('Roma Termini', 'Stazione di Grosseto')
+        id: 'l2', mode: 'treno', line: 'Treno 4130 · direzione Pisa Centrale',
+        from: 'Roma Termini', to: 'Orbetello-Monte Argentario',
+        note: 'Parte da Roma Termini alle 10:12, arriva a Orbetello-Monte Argentario alle 12:25.',
+        depTime: '10:12', arrTime: '12:25',
+        live: gmaps('Roma Termini', 'Stazione di Orbetello-Monte Argentario')
       });
       legs.push({
-        id: 'l3', mode: 'bus', line: 'Autolinee Toscane',
-        from: 'Stazione di Grosseto / Orbetello', to: 'Talamone Porto',
-        note: 'Corse meno frequenti dei treni: controlla l’orario prima di scegliere questa opzione.',
-        depTime: '', arrTime: '',
-        live: gmaps('Stazione di Grosseto', 'Talamone Porto')
+        id: 'l3', mode: 'bus', line: 'Autobus 390',
+        from: 'Orbetello', to: 'Talamone Porto',
+        note: '18 fermate da Orbetello a Talamone Porto.',
+        depTime: '13:30', arrTime: '13:55',
+        live: gmaps('Stazione di Orbetello-Monte Argentario', 'Talamone Porto'),
+        photo: 'assets/fermata-orbetello.jpg',
+        photoCaption: 'Fermata Marebus di partenza a Orbetello'
       });
     }
 
@@ -418,6 +420,11 @@
         <span class="leg-line">${leg.line}</span>
         <span class="leg-from-to">${leg.from}${leg.to ? ' → ' + leg.to : ''}</span>
         ${leg.note ? `<span class="leg-note">${leg.note}</span>` : ''}
+        ${leg.photo ? `
+          <figure class="leg-photo">
+            <img src="${leg.photo}" alt="${leg.photoCaption || 'Foto della fermata'}" loading="lazy">
+            <figcaption>${leg.photoCaption || ''}</figcaption>
+          </figure>` : ''}
         ${leg.live ? `<a class="leg-gmaps" href="${leg.live}" target="_blank" rel="noopener">Apri su Google Maps ↗</a>` : ''}
       `;
       row.appendChild(routeCell);
