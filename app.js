@@ -393,10 +393,30 @@
       row.appendChild(buildCellGroup(leg));
 
       boardBody.appendChild(row);
+
+      const photoImg = routeCell.querySelector('.leg-photo img');
+      if (photoImg) {
+        photoImg.addEventListener('click', () => openLightbox(photoImg.src, photoImg.alt));
+      }
     });
 
     updateInstallHint();
   }
+
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+
+  function openLightbox(src, alt) {
+    lightboxImg.src = src;
+    lightboxImg.alt = alt || '';
+    lightbox.hidden = false;
+  }
+  function closeLightbox() {
+    lightbox.hidden = true;
+    lightboxImg.src = '';
+  }
+  lightbox.addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
 
   function buildCellGroup(leg) {
     const group = document.createElement('div');
