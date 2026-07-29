@@ -8,10 +8,7 @@
   const boardBody = document.getElementById('board-body');
   const dateInput = document.getElementById('trip-date');
   const timeInput = document.getElementById('trip-time');
-  const toggle = document.getElementById('stop-toggle');
-  const toggleOpts = toggle.querySelectorAll('.toggle-opt');
   const resetBtn = document.getElementById('reset-btn');
-
   const directionToggle = document.getElementById('direction-toggle');
   const directionOpts = directionToggle.querySelectorAll('.toggle-opt');
   const profileToggle = document.getElementById('profile-toggle');
@@ -218,7 +215,7 @@
   });
 
   // ================= Itinerario =================
-  function buildLegsAndata(mode, profile) {
+  function buildLegsAndata(profile) {
     const legs = profile === 'papa' ? [
       {
         id: 'l1p', mode: 'metro', line: 'Metro A · direzione Anagnina',
@@ -244,39 +241,22 @@
       }
     ];
 
-    if (mode === 'diretto') {
-      legs.push({
-        id: 'l2', mode: 'treno', line: 'Regionale / IC · linea Tirrenica',
-        from: 'Roma Termini', to: 'Talamone',
-        note: 'Verifica che il treno scelto fermi davvero a Talamone: è una fermata solo per alcuni regionali. Alcuni regionali partono da Tiburtina invece che da Termini: controlla il binario di partenza sul biglietto.',
-        depTime: '', arrTime: '',
-        live: gmaps('Roma Termini', 'Stazione di Talamone')
-      });
-      legs.push({
-        id: 'l3', mode: 'bus', line: 'Autolinee Toscane',
-        from: 'Stazione di Talamone', to: 'Talamone Porto',
-        note: 'La stazione è a circa 4 km dal paese: bus di collegamento, in alternativa taxi.',
-        depTime: '', arrTime: '',
-        live: gmaps('Stazione di Talamone', 'Talamone Porto')
-      });
-    } else {
-      legs.push({
-        id: 'l2', mode: 'treno', line: 'Treno 4130 · direzione Pisa Centrale',
-        from: 'Roma Termini', to: 'Orbetello-Monte Argentario',
-        note: 'Parte da Roma Termini alle 10:12, arriva a Orbetello-Monte Argentario alle 12:25.',
-        depTime: '10:12', arrTime: '12:25',
-        live: gmaps('Roma Termini', 'Stazione di Orbetello-Monte Argentario')
-      });
-      legs.push({
-        id: 'l3', mode: 'bus', line: 'Autobus 390',
-        from: 'Orbetello', to: 'Talamone Porto',
-        note: '18 fermate da Orbetello a Talamone Porto.',
-        depTime: '13:30', arrTime: '13:55',
-        live: gmaps('Stazione di Orbetello-Monte Argentario', 'Talamone Porto'),
-        photo: 'assets/fermata-orbetello.jpg',
-        photoCaption: 'Fermata Marebus di partenza a Orbetello'
-      });
-    }
+    legs.push({
+      id: 'l2', mode: 'treno', line: 'Treno 4130 · direzione Pisa Centrale',
+      from: 'Roma Termini', to: 'Orbetello-Monte Argentario',
+      note: 'Parte da Roma Termini alle 10:12, arriva a Orbetello-Monte Argentario alle 12:25.',
+      depTime: '10:12', arrTime: '12:25',
+      live: gmaps('Roma Termini', 'Stazione di Orbetello-Monte Argentario')
+    });
+    legs.push({
+      id: 'l3', mode: 'bus', line: 'Autobus 390',
+      from: 'Orbetello', to: 'Talamone Porto',
+      note: '18 fermate da Orbetello a Talamone Porto.',
+      depTime: '13:30', arrTime: '13:55',
+      live: gmaps('Stazione di Orbetello-Monte Argentario', 'Talamone Porto'),
+      photo: 'assets/fermata-orbetello.jpg',
+      photoCaption: 'Fermata Marebus di partenza a Orbetello'
+    });
 
     legs.push({
       id: 'l4', mode: 'piedi', line: 'A piedi',
@@ -289,7 +269,7 @@
     return legs;
   }
 
-  function buildLegsRitorno(mode, profile) {
+  function buildLegsRitorno(profile) {
     const legs = [
       {
         id: 'r1', mode: 'piedi', line: 'A piedi',
@@ -300,37 +280,20 @@
       }
     ];
 
-    if (mode === 'diretto') {
-      legs.push({
-        id: 'r2', mode: 'bus', line: 'Autolinee Toscane',
-        from: 'Talamone Porto', to: 'Stazione di Talamone',
-        note: 'La stazione è a circa 4 km dal paese: bus di collegamento, in alternativa taxi.',
-        depTime: '', arrTime: '',
-        live: gmaps('Talamone Porto', 'Stazione di Talamone')
-      });
-      legs.push({
-        id: 'r3', mode: 'treno', line: 'Regionale / IC · linea Tirrenica',
-        from: 'Talamone', to: 'Roma Termini',
-        note: 'Verifica che il treno scelto fermi davvero a Talamone: è una fermata solo per alcuni regionali. Alcuni regionali arrivano a Tiburtina invece che a Termini: controlla la stazione di arrivo sul biglietto.',
-        depTime: '', arrTime: '',
-        live: gmaps('Stazione di Talamone', 'Roma Termini')
-      });
-    } else {
-      legs.push({
-        id: 'r2', mode: 'bus', line: 'Autolinee Toscane',
-        from: 'Talamone Porto', to: 'Stazione di Grosseto / Orbetello',
-        note: 'Corse meno frequenti dei treni: controlla l’orario prima di scegliere questa opzione.',
-        depTime: '', arrTime: '',
-        live: gmaps('Talamone Porto', 'Stazione di Grosseto')
-      });
-      legs.push({
-        id: 'r3', mode: 'treno', line: 'Regionale / IC · linea Tirrenica',
-        from: 'Grosseto (o Orbetello)', to: 'Roma Termini',
-        note: 'Scegli Grosseto o Orbetello in base alla coincidenza bus migliore. Alcuni regionali arrivano a Tiburtina invece che a Termini: controlla la stazione di arrivo sul biglietto.',
-        depTime: '', arrTime: '',
-        live: gmaps('Stazione di Grosseto', 'Roma Termini')
-      });
-    }
+    legs.push({
+      id: 'r2', mode: 'bus', line: 'Autobus 390',
+      from: 'Talamone Porto', to: 'Orbetello',
+      note: '18 fermate da Talamone Porto a Orbetello.',
+      depTime: '', arrTime: '',
+      live: gmaps('Talamone Porto', 'Stazione di Orbetello-Monte Argentario')
+    });
+    legs.push({
+      id: 'r3', mode: 'treno', line: 'Treno · linea Tirrenica',
+      from: 'Orbetello-Monte Argentario', to: 'Roma Termini',
+      note: 'Controlla l’orario di ritorno da Orbetello: verifica se il treno arriva a Termini o a Tiburtina.',
+      depTime: '', arrTime: '',
+      live: gmaps('Stazione di Orbetello-Monte Argentario', 'Roma Termini')
+    });
 
     if (profile === 'papa') {
       legs.push({
@@ -362,8 +325,7 @@
   }
 
   function buildLegs() {
-    const mode = toggle.querySelector('.is-active').dataset.val;
-    return direction === 'ritorno' ? buildLegsRitorno(mode, profile) : buildLegsAndata(mode, profile);
+    return direction === 'ritorno' ? buildLegsRitorno(profile) : buildLegsAndata(profile);
   }
 
   const modeLabel = { treno: 'Treno', bus: 'Autobus', metro: 'Metro', piedi: 'A piedi' };
@@ -379,8 +341,7 @@
   }
   function tripKey() {
     const date = dateInput.value || 'senza-data';
-    const mode = toggle.querySelector('.is-active').dataset.val;
-    return `${direction}__${profile}__${date}__${mode}`;
+    return `${direction}__${profile}__${date}`;
   }
   function getPlatform(legId, which) {
     const store = loadStore();
@@ -519,15 +480,6 @@
   });
 
   // ================= Controlli =================
-  toggleOpts.forEach(opt => {
-    opt.addEventListener('click', () => {
-      toggleOpts.forEach(o => { o.classList.remove('is-active'); o.setAttribute('aria-checked', 'false'); });
-      opt.classList.add('is-active');
-      opt.setAttribute('aria-checked', 'true');
-      render();
-    });
-  });
-
   dateInput.addEventListener('change', render);
 
   resetBtn.addEventListener('click', () => {
