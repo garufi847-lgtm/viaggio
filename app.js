@@ -34,6 +34,15 @@
   const gmaps = (from, to) =>
     `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(from)}&destination=${encodeURIComponent(to)}&travelmode=transit`;
 
+  // Foto delle stazioni (da Google Maps, foto pubbliche con autore indicato)
+  const STATION_PHOTOS = {
+    monterotondo: { src: 'https://lh3.googleusercontent.com/place-photos/AG9NLjCa8sXZ4Rt9fa7sOwQJ7xeGx38yYEQKWEiQuc6qRLS2tCpGa6l5CMxFj_ZVQ8r48JtvBp5cN7z4YCXmkDyYdkQ-OnSWoI3H7gTxCuBb4pA4K1gKx83AN1pNoYlbVMs0kVLni7VhqF9WkwkjX3w=w600-h450', caption: 'Stazione Monterotondo-Mentana · foto G. Nicolau / Google Maps' },
+    tiburtina: { src: 'https://lh3.googleusercontent.com/place-photos/AG9NLjDAc2RoP2jt00tTbKQp-S3k4aSGYiwXXweXAXy4DzBsq83S_tOktL1G8L4QA5-tbWymfPUVvsRJQS5JhyrAMX6jxi_qBqvcphGrhbzMGk2kT9kbK2W7rj5YmYpfTSg5tLggCpqOxlzyuITINw=w600-h450', caption: 'Roma Tiburtina · foto J. Kovacs / Google Maps' },
+    termini: { src: 'https://lh3.googleusercontent.com/place-photos/AG9NLjBBTjOI6n0O1kf6VM7xx1o9AiNEWGKkNJWwNTckKHmra70YQwH-EQYv7vtG75SXmUuflQyKO4QSuVDtBaGURi7gUvSpLDYglw91fORHfB88vxUuGYlrD8TqKOUW-Bxr-bSCOibi-Zb8eRD66v4dMxFD=w600-h450', caption: 'Roma Termini · foto A. Kim / Google Maps' },
+    orbetello: { src: 'https://lh3.googleusercontent.com/place-photos/AG9NLjD6pI3whcLV347Mdwp-8lK5N-cDo_Rc532ZkYGgQIWiMe-UYEkibl_huNsWtAm1LfI0LEtuqEnmZ1sYtuz7lhAkzD5227IQNWwkxX41CVI8xkSpr_jJXW5bbxtmvQQEkobkx-jMkw6XL0lbGw=w600-h450', caption: 'Stazione Orbetello-Monte Argentario · foto G. Butini / Google Maps' },
+    talamonePorto: { src: 'https://lh3.googleusercontent.com/place-photos/AG9NLjA1mfGnMxuOJFQrnyQLzcltHug9HXtbWhidp1zJEgUe2QEt3kNeBBSDRZf3XAAx4pjYRL_fFX_qktp9RAgmeenvVEAvEWl2olAGhaQM8CZz6akOOt1jNyHkHHLckrgHCpYV_N5Yo15EJR_lSw=w600-h450', caption: 'Talamone Porto · foto P. Borrello / Google Maps' }
+  };
+
   // ================= ViaggiaTreno (gratis, senza chiave, solo treni) =================
   // ViaggiaTreno non manda header CORS: passiamo da un proxy pubblico gratuito.
   // Proviamo più proxy in sequenza in caso uno sia giù o troppo lento.
@@ -159,6 +168,12 @@
     return { approx };
   }
 
+  // ================= Popup di avviso all'apertura =================
+  const consentModal = document.getElementById('consent-modal');
+  function dismissConsent() { consentModal.hidden = true; }
+  document.getElementById('consent-accept').addEventListener('click', dismissConsent);
+  document.getElementById('consent-accept-anyway').addEventListener('click', dismissConsent);
+
   // ================= Navigazione tra pagine =================
   document.querySelectorAll('.page-nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -230,14 +245,16 @@
         from: 'Monterotondo-Mentana', to: 'Roma Tiburtina',
         note: 'Diverse corse ogni ora, circa 30-35 min di viaggio.',
         depTime: '', arrTime: '',
-        live: gmaps('Stazione Monterotondo-Mentana', 'Roma Tiburtina')
+        live: gmaps('Stazione Monterotondo-Mentana', 'Roma Tiburtina'),
+        photos: [STATION_PHOTOS.monterotondo]
       },
       {
         id: 'l1b', mode: 'metro', line: 'Metro B · direzione Laurentina',
         from: 'Roma Tiburtina', to: 'Roma Termini',
         note: 'Collegamento interno a Roma, circa 10 min (o 15-20 min a piedi se preferisci).',
         depTime: '', arrTime: '',
-        live: gmaps('Roma Tiburtina', 'Roma Termini')
+        live: gmaps('Roma Tiburtina', 'Roma Termini'),
+        photos: [STATION_PHOTOS.tiburtina]
       }
     ];
 
@@ -246,7 +263,8 @@
       from: 'Roma Termini', to: 'Orbetello-Monte Argentario',
       note: 'Parte da Roma Termini alle 10:12, arriva a Orbetello-Monte Argentario alle 12:25.',
       depTime: '10:12', arrTime: '12:25',
-      live: gmaps('Roma Termini', 'Stazione di Orbetello-Monte Argentario')
+      live: gmaps('Roma Termini', 'Stazione di Orbetello-Monte Argentario'),
+      photos: [STATION_PHOTOS.termini, STATION_PHOTOS.orbetello]
     });
     legs.push({
       id: 'l3', mode: 'bus', line: 'Autobus 390',
@@ -254,8 +272,10 @@
       note: '18 fermate da Orbetello a Talamone Porto.',
       depTime: '13:30', arrTime: '13:55',
       live: gmaps('Stazione di Orbetello-Monte Argentario', 'Talamone Porto'),
-      photo: (window.APP_PHOTOS && window.APP_PHOTOS.fermataOrbetello) || 'assets/fermata-orbetello.jpg',
-      photoCaption: 'Fermata Marebus di partenza a Orbetello'
+      photos: [
+        { src: (window.APP_PHOTOS && window.APP_PHOTOS.fermataOrbetello) || 'assets/fermata-orbetello.jpg', caption: 'Fermata Marebus di partenza a Orbetello' },
+        STATION_PHOTOS.talamonePorto
+      ]
     });
 
     legs.push({
@@ -285,14 +305,16 @@
       from: 'Talamone Porto', to: 'Orbetello',
       note: '18 fermate da Talamone Porto a Orbetello.',
       depTime: '', arrTime: '',
-      live: gmaps('Talamone Porto', 'Stazione di Orbetello-Monte Argentario')
+      live: gmaps('Talamone Porto', 'Stazione di Orbetello-Monte Argentario'),
+      photos: [STATION_PHOTOS.talamonePorto, STATION_PHOTOS.orbetello]
     });
     legs.push({
       id: 'r3', mode: 'treno', line: 'Treno · linea Tirrenica',
       from: 'Orbetello-Monte Argentario', to: 'Roma Termini',
       note: 'Controlla l’orario di ritorno da Orbetello: verifica se il treno arriva a Termini o a Tiburtina.',
       depTime: '', arrTime: '',
-      live: gmaps('Stazione di Orbetello-Monte Argentario', 'Roma Termini')
+      live: gmaps('Stazione di Orbetello-Monte Argentario', 'Roma Termini'),
+      photos: [STATION_PHOTOS.termini]
     });
 
     if (profile === 'papa') {
@@ -309,7 +331,8 @@
         from: 'Roma Termini', to: 'Roma Tiburtina',
         note: 'Collegamento interno a Roma, circa 10 min (o 15-20 min a piedi se preferisci).',
         depTime: '', arrTime: '',
-        live: gmaps('Roma Termini', 'Roma Tiburtina')
+        live: gmaps('Roma Termini', 'Roma Tiburtina'),
+        photos: [STATION_PHOTOS.tiburtina]
       });
 
       legs.push({
@@ -317,7 +340,8 @@
         from: 'Roma Tiburtina', to: 'Monterotondo-Mentana',
         note: 'Diverse corse ogni ora, circa 30-35 min di viaggio.',
         depTime: '', arrTime: '',
-        live: gmaps('Roma Tiburtina', 'Stazione Monterotondo-Mentana')
+        live: gmaps('Roma Tiburtina', 'Stazione Monterotondo-Mentana'),
+        photos: [STATION_PHOTOS.monterotondo]
       });
     }
 
@@ -377,15 +401,19 @@
 
       const routeCell = document.createElement('div');
       routeCell.className = 'leg-route';
+      const photos = leg.photos || (leg.photo ? [{ src: leg.photo, caption: leg.photoCaption }] : []);
       routeCell.innerHTML = `
         <span class="leg-line">${leg.line}</span>
         <span class="leg-from-to">${leg.from}${leg.to ? ' → ' + leg.to : ''}</span>
         ${leg.note ? `<span class="leg-note">${leg.note}</span>` : ''}
-        ${leg.photo ? `
-          <figure class="leg-photo">
-            <img src="${leg.photo}" alt="${leg.photoCaption || 'Foto della fermata'}" loading="lazy" onerror="this.closest('.leg-photo').classList.add('is-broken')">
-            <figcaption>${leg.photoCaption || ''}</figcaption>
-          </figure>` : ''}
+        ${photos.length ? `
+          <div class="leg-photo-row">
+            ${photos.map(p => `
+              <figure class="leg-photo">
+                <img src="${p.src}" alt="${p.caption || 'Foto'}" loading="lazy" onerror="this.closest('.leg-photo').classList.add('is-broken')">
+                <figcaption>${p.caption || ''}</figcaption>
+              </figure>`).join('')}
+          </div>` : ''}
         ${leg.live ? `<a class="leg-gmaps" href="${leg.live}" target="_blank" rel="noopener">Apri su Google Maps ↗</a>` : ''}
       `;
       row.appendChild(routeCell);
@@ -394,10 +422,9 @@
 
       boardBody.appendChild(row);
 
-      const photoImg = routeCell.querySelector('.leg-photo img');
-      if (photoImg) {
-        photoImg.addEventListener('click', () => openLightbox(photoImg.src, photoImg.alt));
-      }
+      routeCell.querySelectorAll('.leg-photo img').forEach(img => {
+        img.addEventListener('click', () => openLightbox(img.src, img.alt));
+      });
     });
 
     updateInstallHint();
